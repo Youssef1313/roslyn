@@ -99,8 +99,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.NavigateTo
                         => VisualStudio.Language.NavigateTo.Interfaces.NavigateToItemKind.Property,
                     // VisualStudio.Language.NavigateTo.Interfaces.NavigateToItemKind doesn't have a record, fall back to class.
                     // This should be updated whenever NavigateToItemKind has a record.
-                    //CodeAnalysis.NavigateTo.NavigateToItemKind.Record
-                    //    => VisualStudio.Language.NavigateTo.Interfaces.NavigateToItemKind.Class,
+                    CodeAnalysis.NavigateTo.NavigateToItemKind.Record
+                        => VisualStudio.Language.NavigateTo.Interfaces.NavigateToItemKind.Class,
                     CodeAnalysis.NavigateTo.NavigateToItemKind.Structure
                         => VisualStudio.Language.NavigateTo.Interfaces.NavigateToItemKind.Structure,
                     _ => throw ExceptionUtilities.UnexpectedValue(kind)
