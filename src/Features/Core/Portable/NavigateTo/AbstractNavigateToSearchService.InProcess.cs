@@ -269,9 +269,9 @@ namespace Microsoft.CodeAnalysis.NavigateTo
                         case NavigateToItemKind.Class:
                             lookupTable[(int)DeclaredSymbolInfoKind.Class] = true;
                             break;
-                        case NavigateToItemKind.Record:
-                            lookupTable[(int)DeclaredSymbolInfoKind.Record] = true;
-                            break;
+                        //case NavigateToItemKind.Record:
+                        //    lookupTable[(int)DeclaredSymbolInfoKind.Record] = true;
+                        //    break;
                         case NavigateToItemKind.Constant:
                             lookupTable[(int)DeclaredSymbolInfoKind.Constant] = true;
                             break;
