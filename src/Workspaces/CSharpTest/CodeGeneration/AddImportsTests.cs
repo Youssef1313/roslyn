@@ -8,17 +8,120 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CodeRefactorings;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.CSharp.Testing.XUnit;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.CodeAnalysis.Test.Utilities;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Roslyn.Test.Utilities;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Editing
 {
+    internal class DummyAddConditionalDebugAttributeRefactoring : CodeRefactoringProvider
+    {
+        public override async Task ComputeRefactoringsAsync(CodeRefactoringContext context)
+        {
+            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var methodDecl = root.FindNode(context.Span);
+            context.RegisterRefactoring(new MyAction(
+                title: "Add [ConditionalAttribute(\"DEBUG\")]",
+                ct => AddAttribute(root, context.Document, methodDecl, ct)));
+        }
+
+        private static async Task<Document> AddAttribute(SyntaxNode root, Document document, SyntaxNode methodDecl, CancellationToken ct)
+        {
+            var editor = new SyntaxEditor(root, document.Project.Solution.Workspace);
+            var generator = editor.Generator;
+
+            var semanticModel = await document.GetRequiredSemanticModelAsync(ct).ConfigureAwait(false);
+            var conditionalAttributeSymbol = semanticModel.Compilation.GetTypeByMetadataName("System.Diagnostics.ConditionalAttribute");
+            var attrArgs = new[] { generator.LiteralExpression("DEBUG") };
+
+            var newAttribute = generator
+                .Attribute(generator.TypeExpression(conditionalAttributeSymbol), attrArgs)
+                .WithAdditionalAnnotations(
+                    Simplifier.Annotation,
+                    Simplifier.AddImportsAnnotation);
+
+            editor.AddAttribute(methodDecl, newAttribute);
+
+            return document.WithSyntaxRoot(editor.GetChangedRoot());
+        }
+
+        private class MyAction : CodeAction.DocumentChangeAction
+        {
+            public MyAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument)
+                : base(title, createChangedDocument, title)
+            {
+            }
+        }
+    }
+
+    public class DummyAddConditionalDebugAttributeRefactoringTests
+    {
+        internal class Test : CSharpCodeRefactoringTest<DummyAddConditionalDebugAttributeRefactoring, XUnitVerifier>
+        { }
+
+        [Fact]
+        public async Task TestDummyCodeRefactoringAddsImports()
+        {
+            await new Test()
+            {
+                TestCode = @"
+public class C
+{
+    public void M()
+    {
+        void Loc[||]al()
+        {
+        }
+    }
+}
+",
+                FixedCode = @"
+public class C
+{
+    public void Method()
+    {
+    }
+}
+"
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestDummyCodeRefactoringAddsImports2()
+        {
+            await new Test()
+            {
+                TestCode = @"
+public class C
+{
+    public void Metho[||]d()
+    {
+    }
+}
+",
+                FixedCode = @"
+public class C
+{
+    public void Method()
+    {
+    }
+}
+"
+            }.RunAsync();
+        }
+    }
+
     [UseExportProvider]
     public class AddImportsTests
     {
@@ -133,6 +236,119 @@ class C
     public List<int> F;
 }", useSymbolAnnotations);
         }
+
+        /*
+        [Theory, MemberData(nameof(TestAllData))]
+        public async Task TestAddImport2(bool useSymbolAnnotations)
+        {
+            await TestAsync(
+@"using System;
+
+public class C
+{
+    public void M()
+    {
+        [MyNamespaceToGetSimplified.My]
+        void Local() {}
+    }
+}
+
+namespace MyNamespaceToGetSimplified
+{
+    public class MyAttribute : Attribute { }
+}",
+
+@"using System;
+using MyNamespaceToGetSimplified;
+
+public class C
+{
+    public void M()
+    {
+        [MyNamespaceToGetSimplified.My]
+        void Local() {}
+    }
+}
+
+namespace MyNamespaceToGetSimplified
+{
+    public class MyAttribute : Attribute { }
+}",
+
+@"using System;
+
+
+public class C
+{
+    public void M()
+    {
+        [My]
+        void Local() {}
+    }
+}
+
+namespace MyNamespaceToGetSimplified
+{
+    public class MyAttribute : Attribute { }
+}", useSymbolAnnotations);
+        }
+
+        [Theory, MemberData(nameof(TestAllData))]
+        public async Task TestAddImport3(bool useSymbolAnnotations)
+        {
+            await TestAsync(
+@"public class C
+{
+    public void M()
+    {
+        System.Threading.Tasks.Task Local() {}
+    }
+}",
+
+@"using System.Threading.Tasks;
+
+public class C
+{
+    public void M()
+    {
+        System.Threading.Tasks.Task Local() {}
+    }
+}",
+
+@"using System.Threading.Tasks;
+
+public class C
+{
+    public void M()
+    {
+        Task Local() {}
+    }
+}", useSymbolAnnotations);
+        }
+
+        [Theory, MemberData(nameof(TestAllData))]
+        public async Task TestAddImport4(bool useSymbolAnnotations)
+        {
+            await TestAsync(
+@"[System.Diagnostics.DebuggerDisplay("""")]
+public class C
+{
+}",
+
+@"using System.Diagnostics;
+
+[System.Diagnostics.DebuggerDisplay("""")]
+public class C
+{
+}",
+
+@"using System.Diagnostics;
+
+[DebuggerDisplay("""")]
+public class C
+{
+}", useSymbolAnnotations);
+        }*/
 
         [Theory, MemberData(nameof(TestAllData))]
         public async Task TestAddSystemImportFirst(bool useSymbolAnnotations)
