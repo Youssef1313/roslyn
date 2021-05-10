@@ -31,6 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Xaml.Implementation.LanguageSe
         private readonly IXamlPullDiagnosticService _xamlDiagnosticService;
 
         public override bool MutatesSolutionState => false;
+        public override bool RequiresLSPSolution => true;
 
         /// <summary>
         /// Gets the progress object to stream results to.
@@ -60,6 +61,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Xaml.Implementation.LanguageSe
 
         public override async Task<TReport[]?> HandleRequestAsync(TDiagnosticsParams diagnosticsParams, RequestContext context, CancellationToken cancellationToken)
         {
+            Contract.ThrowIfNull(context.Solution);
+
             using var progress = BufferedProgress.Create(GetProgress(diagnosticsParams));
 
             // Get the set of results the request said were previously reported.
@@ -148,6 +151,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Xaml.Implementation.LanguageSe
                 // Hidden is translated in ConvertTags to pass along appropriate _ms tags
                 // that will hide the item in a client that knows about those tags.
                 XamlDiagnosticSeverity.Hidden => LSP.DiagnosticSeverity.Hint,
+                XamlDiagnosticSeverity.HintedSuggestion => LSP.DiagnosticSeverity.Hint,
                 XamlDiagnosticSeverity.Message => LSP.DiagnosticSeverity.Information,
                 XamlDiagnosticSeverity.Warning => LSP.DiagnosticSeverity.Warning,
                 XamlDiagnosticSeverity.Error => LSP.DiagnosticSeverity.Error,
@@ -169,6 +173,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Xaml.Implementation.LanguageSe
                 result.Add(VSDiagnosticTags.HiddenInEditor);
                 result.Add(VSDiagnosticTags.HiddenInErrorList);
                 result.Add(VSDiagnosticTags.SuppressEditorToolTip);
+            }
+            else if (diagnostic.Severity == XamlDiagnosticSeverity.HintedSuggestion)
+            {
+                result.Add(VSDiagnosticTags.HiddenInErrorList);
             }
             else
             {

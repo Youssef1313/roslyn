@@ -5,7 +5,7 @@
 #nullable disable
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
@@ -367,9 +367,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 case BoundDagTypeEvaluation e:
                                     {
                                         var output = new BoundDagTemp(e.Syntax, e.Type, e);
-                                        HashSet<DiagnosticInfo> discardedDiagnostics = null;
+                                        var discardedUseSiteInfo = CompoundUseSiteInfo<AssemblySymbol>.Discarded;
                                         int outputSlot;
-                                        switch (_conversions.WithNullability(false).ClassifyConversionFromType(inputType, e.Type, ref discardedDiagnostics).Kind)
+                                        switch (_conversions.WithNullability(false).ClassifyConversionFromType(inputType, e.Type, ref discardedUseSiteInfo).Kind)
                                         {
                                             case ConversionKind.Identity:
                                             case ConversionKind.ImplicitReference:
@@ -398,7 +398,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                         var output = new BoundDagTemp(e.Syntax, type.Type, e);
                                         int outputSlot = -1;
                                         var originalTupleElement = e.Input.IsOriginalInput && !originalInputElementSlots.IsDefault
-                                            ? field as TupleFieldSymbol
+                                            ? field
                                             : null;
                                         if (originalTupleElement is not null)
                                         {
@@ -627,11 +627,11 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             bool isDerivedType(TypeSymbol derivedType, TypeSymbol baseType)
             {
-                HashSet<DiagnosticInfo> discardedDiagnostics = null;
                 if (derivedType.IsErrorType() || baseType.IsErrorType())
                     return true;
 
-                return _conversions.WithNullability(false).ClassifyConversionFromType(derivedType, baseType, ref discardedDiagnostics).Kind switch
+                var discardedUseSiteInfo = CompoundUseSiteInfo<AssemblySymbol>.Discarded;
+                return _conversions.WithNullability(false).ClassifyConversionFromType(derivedType, baseType, ref discardedUseSiteInfo).Kind switch
                 {
                     ConversionKind.Identity => true,
                     ConversionKind.ImplicitReference => true,
@@ -763,7 +763,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             foreach (var arm in node.SwitchArms)
             {
-                SetState(!arm.Pattern.HasErrors && labelStateMap.TryGetValue(arm.Label, out var labelState) ? labelState.state : UnreachableState());
+                SetState(getStateForArm(arm));
                 // https://github.com/dotnet/roslyn/issues/35836 Is this where we want to take the snapshot?
                 TakeIncrementalSnapshot(arm);
                 VisitPatternForRewriting(arm.Pattern);
@@ -780,45 +780,53 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             var placeholders = placeholderBuilder.ToImmutableAndFree();
-            HashSet<DiagnosticInfo> useSiteDiagnostics = null;
+            var discardedUseSiteInfo = CompoundUseSiteInfo<AssemblySymbol>.Discarded;
 
             TypeSymbol inferredType =
-                (inferType ? BestTypeInferrer.InferBestType(placeholders, _conversions, ref useSiteDiagnostics) : null)
+                (inferType ? BestTypeInferrer.InferBestType(placeholders, _conversions, ref discardedUseSiteInfo) : null)
                     ?? node.Type?.SetUnknownNullabilityForReferenceTypes();
 
             var inferredTypeWithAnnotations = TypeWithAnnotations.Create(inferredType);
+            NullableFlowState inferredState;
 
-            // Convert elements to best type to determine element top-level nullability and to report nested nullability warnings
-            if (inferredType is not null)
+            if (inferType)
             {
-                for (int i = 0; i < numSwitchArms; i++)
+                if (inferredType is null)
                 {
-                    var expression = expressions[i];
-                    resultTypes[i] = VisitConversion(conversionOpt: null, expression, conversions[i], inferredTypeWithAnnotations, resultTypes[i], checkConversion: true,
-                        fromExplicitCast: false, useLegacyWarnings: false, AssignmentKind.Assignment, reportRemainingWarnings: true, reportTopLevelWarnings: false);
+                    // This can happen when we're inferring the return type of a lambda, or when there are no arms (an error case).
+                    // For this case, we don't need to do any work, as the unconverted switch expression can't contribute info, and
+                    // there is nothing that is being publicly exposed to the semantic model.
+                    Debug.Assert((node is BoundUnconvertedSwitchExpression && _returnTypesOpt is not null)
+                                 || node is BoundSwitchExpression { SwitchArms: { Length: 0 } });
+                    inferredState = default;
+                }
+                else
+                {
+                    for (int i = 0; i < numSwitchArms; i++)
+                    {
+                        var nodeForSyntax = expressions[i];
+                        var arm = node.SwitchArms[i];
+                        var armState = getStateForArm(arm);
+                        resultTypes[i] = ConvertConditionalOperandOrSwitchExpressionArmResult(arm.Value, nodeForSyntax, conversions[i], inferredTypeWithAnnotations, resultTypes[i], armState, armState.Reachable);
+                    }
+                    inferredState = BestTypeInferrer.GetNullableState(resultTypes);
                 }
             }
-
-            var inferredState = BestTypeInferrer.GetNullableState(resultTypes);
-            var resultType = TypeWithState.Create(inferredType, inferredState);
-
-            if (inferredType is not null)
+            else
             {
-                inferredTypeWithAnnotations = resultType.ToTypeWithAnnotations(compilation);
-                if (resultType.State == NullableFlowState.MaybeDefault)
-                {
-                    inferredTypeWithAnnotations = inferredTypeWithAnnotations.AsAnnotated();
-                }
-
+                var states = ArrayBuilder<(LocalState, TypeWithState, bool)>.GetInstance(numSwitchArms);
                 for (int i = 0; i < numSwitchArms; i++)
                 {
                     var nodeForSyntax = expressions[i];
-                    var conversionOpt = node.SwitchArms[i].Value switch { BoundConversion c when c != nodeForSyntax => c, _ => null };
-                    // Report top-level warnings
-                    _ = VisitConversion(conversionOpt, conversionOperand: nodeForSyntax, conversions[i], targetTypeWithNullability: inferredTypeWithAnnotations, operandType: resultTypes[i],
-                        checkConversion: true, fromExplicitCast: false, useLegacyWarnings: false, AssignmentKind.Assignment, reportRemainingWarnings: false, reportTopLevelWarnings: true);
+                    var armState = getStateForArm(node.SwitchArms[i]);
+                    states.Add((armState, resultTypes[i], armState.Reachable));
                 }
+
+                ConditionalInfoForConversion.Add(node, states.ToImmutableAndFree());
+                inferredState = BestTypeInferrer.GetNullableState(resultTypes);
             }
+
+            var resultType = TypeWithState.Create(inferredType, inferredState);
 
             conversions.Free();
             resultTypes.Free();
@@ -826,6 +834,9 @@ namespace Microsoft.CodeAnalysis.CSharp
             labelStateMap.Free();
             SetState(endState);
             SetResult(node, resultType, inferredTypeWithAnnotations);
+
+            LocalState getStateForArm(BoundSwitchExpressionArm arm)
+                => !arm.Pattern.HasErrors && labelStateMap.TryGetValue(arm.Label, out var labelState) ? labelState.state : UnreachableState();
         }
 
         public override BoundNode VisitIsPatternExpression(BoundIsPatternExpression node)

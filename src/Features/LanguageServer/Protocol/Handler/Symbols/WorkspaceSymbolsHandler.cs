@@ -8,6 +8,7 @@ using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Editor.Shared.Extensions;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.NavigateTo;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
@@ -37,36 +38,42 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Handler
                 NavigateToItemKind.Structure);
 
         private readonly IAsynchronousOperationListener _asyncListener;
+        private readonly IThreadingContext _threadingContext;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
-        public WorkspaceSymbolsHandler(IAsynchronousOperationListenerProvider listenerProvider)
+        public WorkspaceSymbolsHandler(
+            IAsynchronousOperationListenerProvider listenerProvider,
+            IThreadingContext threadingContext)
         {
             _asyncListener = listenerProvider.GetListener(FeatureAttribute.NavigateTo);
+            _threadingContext = threadingContext;
         }
 
         public override string Method => Methods.WorkspaceSymbolName;
 
         public override bool MutatesSolutionState => false;
+        public override bool RequiresLSPSolution => true;
 
         public override TextDocumentIdentifier? GetTextDocumentIdentifier(WorkspaceSymbolParams request) => null;
 
         public override async Task<SymbolInformation[]?> HandleRequestAsync(WorkspaceSymbolParams request, RequestContext context, CancellationToken cancellationToken)
         {
+            Contract.ThrowIfNull(context.Solution);
+
             var solution = context.Solution;
 
             using var progress = BufferedProgress.Create(request.PartialResultToken);
-            var searcher = new NavigateToSearcher(
+            var searcher = NavigateToSearcher.Create(
                 solution,
                 _asyncListener,
                 new LSPNavigateToCallback(progress),
                 request.Query,
                 searchCurrentDocument: false,
                 s_supportedKinds,
-                cancellationToken);
+                _threadingContext.DisposalToken);
 
-            await searcher.SearchAsync().ConfigureAwait(false);
-
+            await searcher.SearchAsync(cancellationToken).ConfigureAwait(false);
             return progress.GetValues();
         }
 
