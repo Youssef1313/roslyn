@@ -194,8 +194,36 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             analyzedArguments.ConstructorArguments.Free();
 
+            // PROTOTYPE: Is BindDefaultArguments really needed? The only thing I called it for is to get back 'defaultArguments'. Can this be done here or in BindAttributeConstructor?
+            // What side effects can BindDefaultArguments potentially have? Pretty sure bad things will happen with this call.
+            //BindDefaultArguments(
+            //    node,
+            //    attributeConstructor?.Parameters ?? default /*PROTOTYPE: Test a case when attributeConstructor is null.*/,
+            //    analyzedArguments.ConstructorArguments.Arguments,
+            //    analyzedArguments.ConstructorArguments.RefKinds,
+            //    ref argsToParamsOpt,
+            //    out var defaultArguments,
+            //    expanded,
+            //    enableCallerInfo: true /*PROTOTYPE??*/,
+            //    diagnostics);
+
+
+            // Not confident about this logic.
+            BitVector defaultArguments = default;
+            if (argsToParamsOpt != default && attributeConstructor is not null)
+            {
+                defaultArguments = BitVector.Create(attributeConstructor.ParameterCount);
+                for (int i = 0; i < attributeConstructor.ParameterCount; i++)
+                {
+                    if (!argsToParamsOpt.Contains(i))
+                    {
+                        defaultArguments[i] = true;
+                    }
+                }
+            }
+
             return new BoundAttribute(node, attributeConstructor, boundConstructorArguments, boundConstructorArgumentNamesOpt, argsToParamsOpt, expanded,
-                boundNamedArguments, resultKind, attributeType, hasErrors: resultKind != LookupResultKind.Viable);
+                boundNamedArguments, resultKind, defaultArguments, attributeType, hasErrors: resultKind != LookupResultKind.Viable);
         }
 
         private CSharpAttributeData GetAttribute(BoundAttribute boundAttribute, BindingDiagnosticBag diagnostics)

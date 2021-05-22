@@ -2012,6 +2012,14 @@ namespace Microsoft.CodeAnalysis.Test.Utilities
             Visit(operation.Initializer, "Initializer");
         }
 
+        public override void VisitAttribute(IAttributeOperation operation)
+        {
+            LogString(nameof(IAttributeOperation));
+            LogCommonPropertiesAndNewLine(operation);
+            VisitArguments(operation.Arguments);
+            VisitArray(operation.NamedArguments, "NamedArguments", true);
+        }
+
         #endregion
     }
 }

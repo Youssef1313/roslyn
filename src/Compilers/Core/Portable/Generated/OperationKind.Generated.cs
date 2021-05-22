@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 // < auto-generated />
@@ -254,5 +254,7 @@ namespace Microsoft.CodeAnalysis
         RelationalPattern = 0x70,
         /// <summary>Indicates an <see cref="IWithOperation"/>.</summary>
         With = 0x71,
+        /// <summary>Indicates an <see cref="IAttributeOperation"/>.</summary>
+        Attribute = 0x72,
     }
 }

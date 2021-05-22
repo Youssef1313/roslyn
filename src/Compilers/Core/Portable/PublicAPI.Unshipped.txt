@@ -23,6 +23,10 @@ Microsoft.CodeAnalysis.GeneratorPostInitializationContext.CancellationToken.get 
 Microsoft.CodeAnalysis.GeneratorPostInitializationContext.GeneratorPostInitializationContext() -> void
 Microsoft.CodeAnalysis.IMethodSymbol.MethodImplementationFlags.get -> System.Reflection.MethodImplAttributes
 Microsoft.CodeAnalysis.ITypeSymbol.IsRecord.get -> bool
+Microsoft.CodeAnalysis.OperationKind.Attribute = 114 -> Microsoft.CodeAnalysis.OperationKind
+Microsoft.CodeAnalysis.Operations.IAttributeOperation
+Microsoft.CodeAnalysis.Operations.IAttributeOperation.Arguments.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Operations.IArgumentOperation!>
+Microsoft.CodeAnalysis.Operations.IAttributeOperation.NamedArguments.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Operations.ISimpleAssignmentOperation!>
 Microsoft.CodeAnalysis.Operations.OperationWalker<TArgument>
 Microsoft.CodeAnalysis.Operations.OperationWalker<TArgument>.OperationWalker() -> void
 Microsoft.CodeAnalysis.SymbolDisplayPartKind.RecordClassName = 31 -> Microsoft.CodeAnalysis.SymbolDisplayPartKind
@@ -43,3 +47,5 @@ override Microsoft.CodeAnalysis.Operations.OperationWalker<TArgument>.Visit(Micr
 virtual Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference.GetGenerators(string! language) -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ISourceGenerator!>
 virtual Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference.GetGeneratorsForAllLanguages() -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.ISourceGenerator!>
 abstract Microsoft.CodeAnalysis.Compilation.GetUsedAssemblyReferences(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.MetadataReference!>
+virtual Microsoft.CodeAnalysis.Operations.OperationVisitor.VisitAttribute(Microsoft.CodeAnalysis.Operations.IAttributeOperation! operation) -> void
+virtual Microsoft.CodeAnalysis.Operations.OperationVisitor<TArgument, TResult>.VisitAttribute(Microsoft.CodeAnalysis.Operations.IAttributeOperation! operation, TArgument argument) -> TResult?
