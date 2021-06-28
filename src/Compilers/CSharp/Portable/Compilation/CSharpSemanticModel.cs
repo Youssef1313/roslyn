@@ -959,15 +959,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                         return new CSharpTypeInfo(declarationTypeSymbol, declarationTypeSymbol, nullabilityInfo, nullabilityInfo, Conversion.Identity);
 
                     case SyntaxKind.DiscardDesignation:
+                    case SyntaxKind.ParenthesizedVariableDesignation:
                         var declarationInfo = GetTypeInfoWorker(parent, cancellationToken);
                         return new CSharpTypeInfo(declarationInfo.Type, declarationInfo.Type, declarationInfo.Nullability, declarationInfo.Nullability, Conversion.Identity);
-
-                    case SyntaxKind.ParenthesizedVariableDesignation:
-                        if (((TypeSyntax)expression).IsVar)
-                        {
-                            return CSharpTypeInfo.None;
-                        }
-                        break;
                 }
             }
 
