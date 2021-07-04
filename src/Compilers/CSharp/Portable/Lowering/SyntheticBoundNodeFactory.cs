@@ -999,6 +999,11 @@ namespace Microsoft.CodeAnalysis.CSharp
             return new BoundLiteral(Syntax, ConstantValue.Create(value), SpecialType(Microsoft.CodeAnalysis.SpecialType.System_Boolean)) { WasCompilerGenerated = true };
         }
 
+        public BoundLiteral Literal(char value)
+        {
+            return new BoundLiteral(Syntax, ConstantValue.Create(value), SpecialType(Microsoft.CodeAnalysis.SpecialType.System_Char)) { WasCompilerGenerated = true };
+        }
+
         public BoundLiteral Literal(string? value)
         {
             var stringConst = ConstantValue.Create(value);

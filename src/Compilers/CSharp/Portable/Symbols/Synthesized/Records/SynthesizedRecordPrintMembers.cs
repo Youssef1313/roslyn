@@ -162,14 +162,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 for (var i = 0; i < printableMembers.Length; i++)
                 {
-                    // builder.Append(<name>);
-                    // builder.Append(" = ");
+                    // builder.Append("<name> = ");
                     // builder.Append((object)<value>); OR builder.Append(<value>.ToString()); for value types
                     // builder.Append(", "); // except for last member
 
                     var member = printableMembers[i];
-                    block.Add(makeAppendString(F, builder, member.Name));
-                    block.Add(makeAppendString(F, builder, " = "));
+                    block.Add(makeAppendString(F, builder, member.Name + " = "));
 
                     var value = member.Kind switch
                     {
