@@ -4273,6 +4273,42 @@ public partial class C
             Assert.Equal("var", varNode.Identifier.ValueText);
 
             var typeInfo = model.GetTypeInfo(varNode);
+            Assert.Equal(CodeAnalysis.NullableAnnotation.None, typeInfo.Nullability.Annotation);
+            Assert.Equal(CodeAnalysis.NullableAnnotation.None, typeInfo.ConvertedNullability.Annotation);
+
+            Assert.NotNull(typeInfo.Type);
+            Assert.NotNull(typeInfo.ConvertedType);
+            Assert.Equal(typeInfo.Type, typeInfo.ConvertedType);
+
+            var type = (INamedTypeSymbol)typeInfo.Type;
+            Assert.True(type.IsTupleType);
+            Assert.Equal(2, type.Arity);
+            Assert.Equal(2, type.TupleElements.Length);
+            Assert.Equal(SpecialType.System_String, type.TupleElements[0].Type.SpecialType);
+            Assert.Equal(SpecialType.System_Int32, type.TupleElements[1].Type.SpecialType);
+        }
+
+        [Fact, WorkItem(54437, "https://github.com/dotnet/roslyn/issues/54437")]
+        public void TestVarTuple_Nullable()
+        {
+            var source = @"
+#nullable enable
+var (a, b) = ("""", 0);
+";
+            var comp = CreateCompilation(source, parseOptions: TestOptions.Regular9);
+            comp.VerifyDiagnostics();
+
+            var tree = comp.SyntaxTrees.Single();
+            var model = comp.GetSemanticModel(tree);
+            var root = tree.GetCompilationUnitRoot();
+
+            var varNode = root.DescendantNodes().OfType<IdentifierNameSyntax>().Single();
+            Assert.Equal("var", varNode.Identifier.ValueText);
+
+            var typeInfo = model.GetTypeInfo(varNode);
+            Assert.Equal(CodeAnalysis.NullableAnnotation.None, typeInfo.Nullability.Annotation);
+            Assert.Equal(CodeAnalysis.NullableAnnotation.None, typeInfo.ConvertedNullability.Annotation);
+
             Assert.NotNull(typeInfo.Type);
             Assert.NotNull(typeInfo.ConvertedType);
             Assert.Equal(typeInfo.Type, typeInfo.ConvertedType);

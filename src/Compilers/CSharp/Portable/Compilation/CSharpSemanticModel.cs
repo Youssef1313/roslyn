@@ -961,7 +961,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     case SyntaxKind.DiscardDesignation:
                     case SyntaxKind.ParenthesizedVariableDesignation:
                         var declarationInfo = GetTypeInfoWorker(parent, cancellationToken);
-                        return new CSharpTypeInfo(declarationInfo.Type, declarationInfo.Type, declarationInfo.Nullability, declarationInfo.Nullability, Conversion.Identity);
+                        return new CSharpTypeInfo(declarationInfo.Type, declarationInfo.ConvertedType, declarationInfo.Nullability, declarationInfo.ConvertedNullability, Conversion.Identity);
                 }
             }
 
