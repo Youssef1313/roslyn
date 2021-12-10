@@ -35,7 +35,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override void Accept(CSharpSymbolVisitor visitor) => visitor.VisitDiscard(this);
         public override TResult Accept<TResult>(CSharpSymbolVisitor<TResult> visitor) => visitor.VisitDiscard(this);
 
-        public override bool Equals(Symbol? obj, TypeCompareKind compareKind) => obj is DiscardSymbol other && this.TypeWithAnnotations.Equals(other.TypeWithAnnotations, compareKind);
+        public override bool Equals(Symbol? obj, TypeCompareKind compareKind)
+        {
+            var areEqual = obj is DiscardSymbol other && this.TypeWithAnnotations.Equals(other.TypeWithAnnotations, compareKind);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
+        }
         public override int GetHashCode() => this.TypeWithAnnotations.GetHashCode();
 
         protected override ISymbol CreateISymbol()

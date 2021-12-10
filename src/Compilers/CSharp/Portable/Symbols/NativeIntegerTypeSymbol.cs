@@ -443,7 +443,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool MustCallMethodsDirectly => _underlyingProperty.MustCallMethodsDirectly;
 
-        public override bool Equals(Symbol? other, TypeCompareKind comparison) => NativeIntegerTypeSymbol.EqualsHelper(this, other, comparison, symbol => symbol._underlyingProperty);
+        public override bool Equals(Symbol? other, TypeCompareKind comparison)
+        {
+            var areEqual = NativeIntegerTypeSymbol.EqualsHelper(this, other, comparison, symbol => symbol._underlyingProperty);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == other!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(other), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
+        }
 
         public override int GetHashCode() => _underlyingProperty.GetHashCode();
 

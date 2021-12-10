@@ -205,6 +205,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
                 else if (ReferenceEquals(this, obj))
                 {
+                    Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                    Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
                     return true;
                 }
 
@@ -216,8 +218,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 //  consider properties the same is the owning types are the same and 
                 //  the names are equal
-                return ((object)other != null) && other.Name == this.Name
+                var areEqual = ((object)other != null) && other.Name == this.Name
                     && other.ContainingType.Equals(this.ContainingType, compareKind);
+                if (areEqual)
+                {
+                    Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                    Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+                }
+
+                return areEqual;
             }
 
             public override int GetHashCode()

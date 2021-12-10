@@ -241,6 +241,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (ReferenceEquals(this, obj))
             {
+                Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
                 return true;
             }
 
@@ -251,9 +253,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             AliasSymbol? other = obj as AliasSymbol;
 
-            return (object?)other != null &&
+            var areEqual = (object?)other != null &&
                 Equals(this.Locations.FirstOrDefault(), other.Locations.FirstOrDefault()) &&
                 this.ContainingAssembly.Equals(other.ContainingAssembly, compareKind);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         public override int GetHashCode()

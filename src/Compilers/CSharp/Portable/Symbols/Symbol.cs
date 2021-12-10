@@ -658,23 +658,51 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         public sealed override bool Equals(object obj)
         {
-            return this.Equals(obj as Symbol, SymbolEqualityComparer.Default.CompareKind);
+            var areEqual = this.Equals(obj as Symbol, SymbolEqualityComparer.Default.CompareKind);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == (obj as Symbol).GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(SymbolEqualityComparer.Default.GetHashCode(this) == SymbolEqualityComparer.Default.GetHashCode(obj as Symbol), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         public bool Equals(Symbol other)
         {
-            return this.Equals(other, SymbolEqualityComparer.Default.CompareKind);
+            var areEqual = this.Equals(other, SymbolEqualityComparer.Default.CompareKind);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == other.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(SymbolEqualityComparer.Default.GetHashCode(this) == SymbolEqualityComparer.Default.GetHashCode(other), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         bool ISymbolInternal.Equals(ISymbolInternal other, TypeCompareKind compareKind)
         {
-            return this.Equals(other as Symbol, compareKind);
+            var areEqual = this.Equals(other as Symbol, compareKind);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == (other as Symbol).GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(other), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         // By default we don't consider the compareKind, and do reference equality. This can be overridden.
         public virtual bool Equals(Symbol other, TypeCompareKind compareKind)
         {
-            return (object)this == other;
+            var areEqual = (object)this == other;
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == other.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(other), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         // By default, we do reference equality. This can be overridden.
@@ -690,7 +718,14 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return second is null;
             }
 
-            return first.Equals(second, compareKind);
+            var areEqual = first.Equals(second, compareKind);
+            if (areEqual)
+            {
+                Debug.Assert(first.GetHashCode() == second.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(first) == new SymbolEqualityComparer(compareKind).GetHashCode(second), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         /// <summary>

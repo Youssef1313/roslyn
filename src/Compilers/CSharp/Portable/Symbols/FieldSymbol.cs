@@ -487,10 +487,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (other is SubstitutedFieldSymbol sfs)
             {
-                return sfs.Equals(this, compareKind);
+                if (sfs.Equals(this, compareKind))
+                {
+                    Debug.Assert(this.GetHashCode() == other.GetHashCode(), "Hash code should be the same for equal symbols.");
+                    Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(other), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+                    return true;
+                }
+
+                return false;
             }
 
-            return base.Equals(other, compareKind);
+            var areEqual = base.Equals(other, compareKind);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == other.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(other), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         public override int GetHashCode()

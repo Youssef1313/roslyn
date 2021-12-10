@@ -344,12 +344,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (ReferenceEquals(this, other))
             {
+                Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+
                 return true;
             }
 
             // This checks if the events have the same definition and the type parameters on the containing types have been
             // substituted in the same way.
-            return TypeSymbol.Equals(this.ContainingType, other.ContainingType, compareKind) && ReferenceEquals(this.OriginalDefinition, other.OriginalDefinition);
+            var areEqual = TypeSymbol.Equals(this.ContainingType, other.ContainingType, compareKind) && ReferenceEquals(this.OriginalDefinition, other.OriginalDefinition);
+            if (areEqual)
+            {
+                Debug.Assert(this.GetHashCode() == obj!.GetHashCode(), "Hash code should be the same for equal symbols.");
+                Debug.Assert(new SymbolEqualityComparer(compareKind).GetHashCode(this) == new SymbolEqualityComparer(compareKind).GetHashCode(obj), "SymbolEqualityComparer should produce equal hash codes for equal symbols.");
+            }
+
+            return areEqual;
         }
 
         public override int GetHashCode()
