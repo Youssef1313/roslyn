@@ -196,7 +196,7 @@
     <RichCodeNavEnvVarDumpVersion>0.1.1643-alpha</RichCodeNavEnvVarDumpVersion>
     <RoslynBuildUtilVersion>0.9.8-beta</RoslynBuildUtilVersion>
     <RoslynDependenciesOptimizationDataVersion>3.0.0-beta2-19053-01</RoslynDependenciesOptimizationDataVersion>
-    <RoslynDiagnosticsAnalyzersVersion>$(RoslynDiagnosticsNugetPackageVersion)</RoslynDiagnosticsAnalyzersVersion>
+    <RoslynDiagnosticsAnalyzersVersion>3.3.4-dev</RoslynDiagnosticsAnalyzersVersion>
     <!--
       The package "Microsoft.CodeAnalysis.Analyzer.Testing" brings in an earlier version of these NuGet dependencies than
       is expected by the NET SDK used in the Workspace.MSBuild UnitTests. In order to test against the same verion of NuGet
