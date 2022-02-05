@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseObjectInitializer
             ImmutableArray<Match<ExpressionSyntax, StatementSyntax, MemberAccessExpressionSyntax, ExpressionStatementSyntax>> matches)
         {
             return UseInitializerHelpers.GetNewObjectCreation(
-                objectCreation, CreateExpressions(matches));
+                objectCreation, SyntaxKind.ObjectInitializerExpression, CreateExpressions(matches));
         }
 
         private static SeparatedSyntaxList<ExpressionSyntax> CreateExpressions(

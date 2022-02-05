@@ -49,8 +49,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UseCollectionInitializer
             ObjectCreationExpressionSyntax objectCreation,
             ImmutableArray<ExpressionStatementSyntax> matches)
         {
+            var expressions = CreateExpressions(matches);
+
+            var kind = expressions.Count > 0 && expressions[0].IsKind(SyntaxKind.SimpleAssignmentExpression)
+                ? SyntaxKind.ObjectInitializerExpression
+                : SyntaxKind.CollectionInitializerExpression;
+
             return UseInitializerHelpers.GetNewObjectCreation(
-                objectCreation, CreateExpressions(matches));
+                objectCreation, kind, expressions);
         }
 
         private static SeparatedSyntaxList<ExpressionSyntax> CreateExpressions(
