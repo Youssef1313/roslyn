@@ -16,7 +16,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Semantic.UnitTests.Semantics
 {
     /* PROTOTYPE(semi-auto-props):
      * Add tests for field attribute target, specially for setter-only
-     * nameof(field) should work only when there is a symbol called "field" in scope.
      * nullability tests, ie, make sure we get null dereference warnings when needed.
      */
 
@@ -81,7 +80,121 @@ namespace Microsoft.CodeAnalysis.CSharp.Semantic.UnitTests.Semantics
             CompileAndVerify(compilation).VerifyTypeIL(typeName, expected);
         }
 
-        [Fact(Skip = "PROTOTYPE(semi-auto-props): Assigning in constructor is not yet supported.")]
+        [Fact]
+        public void TestNameOfField_OnlyFieldUsageIsNameOf()
+        {
+            var comp = CreateCompilation(@"
+public class C
+{
+    public int P
+    {
+        get
+        {
+            // PROTOTYPE(semi-auto-props): Is it expected this binds to a backing field?
+            System.Console.WriteLine(nameof(field));
+            return 0;
+        }
+    }
+}");
+            comp.VerifyDiagnostics();
+            VerifyTypeIL(comp, "C", @"
+.class public auto ansi beforefieldinit C
+	extends [mscorlib]System.Object
+{
+	// Fields
+	.field private initonly int32 '<P>k__BackingField'
+	.custom instance void [mscorlib]System.Runtime.CompilerServices.CompilerGeneratedAttribute::.ctor() = (
+		01 00 00 00
+	)
+	// Methods
+	.method public hidebysig specialname 
+		instance int32 get_P () cil managed 
+	{
+		// Method begins at RVA 0x2050
+		// Code size 12 (0xc)
+		.maxstack 8
+		IL_0000: ldstr ""field""
+		IL_0005: call void [mscorlib]System.Console::WriteLine(string)
+		IL_000a: ldc.i4.0
+		IL_000b: ret
+	} // end of method C::get_P
+	.method public hidebysig specialname rtspecialname 
+		instance void .ctor () cil managed 
+	{
+		// Method begins at RVA 0x205d
+		// Code size 7 (0x7)
+		.maxstack 8
+		IL_0000: ldarg.0
+		IL_0001: call instance void [mscorlib]System.Object::.ctor()
+		IL_0006: ret
+	} // end of method C::.ctor
+	// Properties
+	.property instance int32 P()
+	{
+		.get instance int32 C::get_P()
+	}
+} // end of class C
+");
+        }
+
+        [Fact]
+        public void TestNameOfField_ReturnsField()
+        {
+            var comp = CreateCompilation(@"
+public class C
+{
+    public int P
+    {
+        get
+        {
+            System.Console.WriteLine(nameof(field));
+            return field;
+        }
+    }
+}");
+            comp.VerifyDiagnostics();
+            VerifyTypeIL(comp, "C", @"
+.class public auto ansi beforefieldinit C
+	extends [mscorlib]System.Object
+{
+	// Fields
+	.field private initonly int32 '<P>k__BackingField'
+	.custom instance void [mscorlib]System.Runtime.CompilerServices.CompilerGeneratedAttribute::.ctor() = (
+		01 00 00 00
+	)
+	// Methods
+	.method public hidebysig specialname 
+		instance int32 get_P () cil managed 
+	{
+		// Method begins at RVA 0x2050
+		// Code size 17 (0x11)
+		.maxstack 8
+		IL_0000: ldstr ""field""
+		IL_0005: call void [mscorlib]System.Console::WriteLine(string)
+		IL_000a: ldarg.0
+		IL_000b: ldfld int32 C::'<P>k__BackingField'
+		IL_0010: ret
+	} // end of method C::get_P
+	.method public hidebysig specialname rtspecialname 
+		instance void .ctor () cil managed 
+	{
+		// Method begins at RVA 0x2062
+		// Code size 7 (0x7)
+		.maxstack 8
+		IL_0000: ldarg.0
+		IL_0001: call instance void [mscorlib]System.Object::.ctor()
+		IL_0006: ret
+	} // end of method C::.ctor
+	// Properties
+	.property instance int32 P()
+	{
+		.get instance int32 C::get_P()
+	}
+} // end of class C
+");
+        }
+
+        [Fact]
         public void TestFieldOnlyGetter()
         {
             var comp = CreateCompilation(@"
@@ -165,7 +278,111 @@ public class C
 	}
 } // end of class C
 ");
-            Assert.Equal(0, accessorBindingData.NumberOfPerformedAccessorBinding);
+            Assert.Equal(1, accessorBindingData.NumberOfPerformedAccessorBinding);
+        }
+
+        [Fact]
+        public void TestAssigningThroughSetterInConstructor()
+        {
+            var comp = CreateCompilation(@"
+public class C
+{
+    public C()
+    {
+        P = 5;
+    }
+
+    public int P { get => field; set => field = value + 1; }
+
+    public static void Main()
+    {
+        System.Console.WriteLine(new C().P);
+    }
+}
+", options: TestOptions.DebugExe);
+            var accessorBindingData = new SourcePropertySymbolBase.AccessorBindingData();
+            comp.TestOnlyCompilationData = accessorBindingData;
+
+            Assert.Empty(comp.GetTypeByMetadataName("C").GetMembers().OfType<FieldSymbol>());
+
+            CompileAndVerify(comp, expectedOutput: "6");
+            VerifyTypeIL(comp, "C", @"
+.class public auto ansi beforefieldinit C
+	extends [netstandard]System.Object
+{
+	// Fields
+	.field private int32 '<P>k__BackingField'
+	.custom instance void [netstandard]System.Runtime.CompilerServices.CompilerGeneratedAttribute::.ctor() = (
+		01 00 00 00
+	)
+	.custom instance void [netstandard]System.Diagnostics.DebuggerBrowsableAttribute::.ctor(valuetype [netstandard]System.Diagnostics.DebuggerBrowsableState) = (
+		01 00 00 00 00 00 00 00
+	)
+	// Methods
+	.method public hidebysig specialname rtspecialname 
+		instance void .ctor () cil managed 
+	{
+		// Method begins at RVA 0x2050
+		// Code size 17 (0x11)
+		.maxstack 8
+		IL_0000: ldarg.0
+		IL_0001: call instance void [netstandard]System.Object::.ctor()
+		IL_0006: nop
+		IL_0007: nop
+		IL_0008: ldarg.0
+		IL_0009: ldc.i4.5
+		IL_000a: call instance void C::set_P(int32)
+		IL_000f: nop
+		IL_0010: ret
+	} // end of method C::.ctor
+	.method public hidebysig specialname 
+		instance int32 get_P () cil managed 
+	{
+		// Method begins at RVA 0x2062
+		// Code size 7 (0x7)
+		.maxstack 8
+		IL_0000: ldarg.0
+		IL_0001: ldfld int32 C::'<P>k__BackingField'
+		IL_0006: ret
+	} // end of method C::get_P
+	.method public hidebysig specialname 
+		instance void set_P (
+			int32 'value'
+		) cil managed 
+	{
+		// Method begins at RVA 0x206a
+		// Code size 10 (0xa)
+		.maxstack 8
+		IL_0000: ldarg.0
+		IL_0001: ldarg.1
+		IL_0002: ldc.i4.1
+		IL_0003: add
+		IL_0004: stfld int32 C::'<P>k__BackingField'
+		IL_0009: ret
+	} // end of method C::set_P
+	.method public hidebysig static 
+		void Main () cil managed 
+	{
+		// Method begins at RVA 0x2075
+		// Code size 18 (0x12)
+		.maxstack 8
+		.entrypoint
+		IL_0000: nop
+		IL_0001: newobj instance void C::.ctor()
+		IL_0006: call instance int32 C::get_P()
+		IL_000b: call void [netstandard]System.Console::WriteLine(int32)
+		IL_0010: nop
+		IL_0011: ret
+	} // end of method C::Main
+	// Properties
+	.property instance int32 P()
+	{
+		.get instance int32 C::get_P()
+		.set instance void C::set_P(int32)
+	}
+} // end of class C
+");
+            Assert.Equal(1, accessorBindingData.NumberOfPerformedAccessorBinding);
         }
 
         // PROTOTYPE(semi-auto-props): All success scenarios should be executed, expected runtime behavior should be observed.
@@ -1091,7 +1308,7 @@ class Test
             Assert.Equal(0, accessorBindingData.NumberOfPerformedAccessorBinding);
         }
 
-        [Fact(Skip = "PROTOTYPE(semi-auto-props): Assigning in constructor is not yet supported.")]
+        [Fact]
         public void AssignReadOnlyOnlyPropertyInConstructor()
         {
             var comp = CreateCompilation(@"
@@ -1161,7 +1378,7 @@ class Test
     }
 } // end of class Test
 ");
-            Assert.Equal(0, accessorBindingData.NumberOfPerformedAccessorBinding);
+            Assert.Equal(1, accessorBindingData.NumberOfPerformedAccessorBinding);
         }
 
         [Fact]
@@ -1320,7 +1537,7 @@ public class Point
             comp.TestOnlyCompilationData = data;
             Assert.Empty(comp.GetTypeByMetadataName("Point").GetMembers().OfType<FieldSymbol>());
             comp.VerifyDiagnostics();
-            Assert.Equal(0, data.NumberOfPerformedAccessorBinding);
+            Assert.Equal(2, data.NumberOfPerformedAccessorBinding);
         }
 
         [Fact]
