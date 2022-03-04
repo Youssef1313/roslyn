@@ -232,9 +232,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             binder = new WithNullableContextBinder(SyntaxTree, position, binder);
 
-            // PROTOTYPE(semi-auto-props): We should traverse until we get a property accessor, similar to Binder_Expressions. We may want to share the code.
-            if (binder.ContainingMemberOrLambda is SourcePropertyAccessorSymbol { Property.IsIndexer: false } accessor)
+            if (Binder.GetAccessorSymbolForFieldKeyword(binder.ContainingMemberOrLambda) is { } accessor)
             {
+                Debug.Assert(!accessor.Property.IsIndexer);
                 binder = new SpeculativeFieldKeywordBinder(accessor, binder);
             }
 

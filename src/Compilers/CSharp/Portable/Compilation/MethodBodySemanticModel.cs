@@ -226,9 +226,9 @@ namespace Microsoft.CodeAnalysis.CSharp
             var methodSymbol = (MethodSymbol)this.MemberSymbol;
             binder = new WithNullableContextBinder(SyntaxTree, position, binder);
 
-            // PROTOTYPE(semi-auto-props): We should traverse until we get a property accessor, similar to Binder_Expressions. We may want to share the code.
-            if (methodSymbol is SourcePropertyAccessorSymbol { Property.IsIndexer: false } accessor)
+            if (Binder.GetAccessorSymbolForFieldKeyword(methodSymbol) is { } accessor)
             {
+                Debug.Assert(!accessor.Property.IsIndexer)
                 binder = new SpeculativeFieldKeywordBinder(accessor, binder);
             }
 

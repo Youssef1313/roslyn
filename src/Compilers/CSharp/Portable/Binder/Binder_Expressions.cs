@@ -1558,8 +1558,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         expression = new BoundDiscardExpression(node, LocalScopeDepth, type: null);
                     }
                     else if (node.Identifier.ContextualKind() == SyntaxKind.FieldKeyword &&
-                        ContainingMemberOrLambda is SourcePropertyAccessorSymbol { Property.IsIndexer: false } accessor // PROTOTYPE: We should traverse until we get a property accessor, similar to CSharpSemanticModel, we may want to share the code.
-                        )
+                        GetAccessorSymbolForFieldKeyword(ContainingMemberOrLambda) is not null)
                     {
                         if (GetSymbolForPossibleFieldKeyword() is { } backingField)
                         {
@@ -1593,6 +1592,26 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             lookupResult.Free();
             return expression;
+        }
+
+        internal static SourcePropertyAccessorSymbol GetAccessorSymbolForFieldKeyword(Symbol symbol)
+        {
+            while (symbol is not null)
+            {
+                if (symbol is SourcePropertyAccessorSymbol accessor)
+                {
+                    if (accessor.Property.IsIndexer)
+                    {
+                        return null;
+                    }
+
+                    return accessor;
+                }
+
+                symbol = symbol.ContainingSymbol;
+            }
+
+            return null;
         }
 
         /// <summary>
