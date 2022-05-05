@@ -63,6 +63,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly SourcePropertyAccessorSymbol? _getMethod;
         private readonly SourcePropertyAccessorSymbol? _setMethod;
         private object? _lazyBackingFieldSymbol = _lazyBackingFieldSymbolSentinel;
+
+        /// <summary>
+        /// An object to represent whether we reported that a semi auto property
+        /// override must override all accessors.
+        /// If null, we didn't yet report the diagnostic.
+        /// Otherwise, we reported it.
+        /// </summary>
+        private object? _semiAutoPropertyHasGivenMustOverrideDiagnostic;
+
+        private readonly BindingDiagnosticBag _diagnostics;
 #nullable disable
         private readonly TypeSymbol _explicitInterfaceType;
         private ImmutableArray<PropertySymbol> _lazyExplicitInterfaceImplementations;
@@ -119,6 +129,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             _refKind = refKind;
             _modifiers = modifiers;
             _explicitInterfaceType = explicitInterfaceType;
+            _diagnostics = diagnostics;
 
             if (isExplicitInterfaceImplementation)
             {
@@ -185,7 +196,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 Debug.Assert(!IsIndexer);
                 // PROTOTYPE(semi-auto-props): Make sure that TestSemiAutoPropertyWithInitializer (when enabled back) is affected by this.
                 // That is, if we removed "hasInitializer", the test should fail, or any other test should get affected.
-                GetOrCreateBackingField(isCreatedForFieldKeyword: hasInitializer && !isAutoProperty, isEarlyConstructed: true, diagnostics);
+                GetOrCreateBackingField(isCreatedForFieldKeyword: hasInitializer && !isAutoProperty, isEarlyConstructed: true);
             }
 
             if (hasGetAccessor)
@@ -198,7 +209,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        private SynthesizedBackingFieldSymbol? GetOrCreateBackingField(bool isCreatedForFieldKeyword, bool isEarlyConstructed, BindingDiagnosticBag diagnostics)
+        private SynthesizedBackingFieldSymbol? GetOrCreateBackingField(bool isCreatedForFieldKeyword, bool isEarlyConstructed)
         {
             Debug.Assert(!IsIndexer);
             if (_lazyBackingFieldSymbol == _lazyBackingFieldSymbolSentinel)
@@ -210,24 +221,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                               hasInitializer: (_propertyFlags & Flags.HasInitializer) != 0,
                                               isCreatedForFieldKeyword: isCreatedForFieldKeyword,
                                               isEarlyConstructed: isEarlyConstructed);
-                if (Interlocked.CompareExchange(ref _lazyBackingFieldSymbol, backingField, _lazyBackingFieldSymbolSentinel) == _lazyBackingFieldSymbolSentinel &&
-                    isCreatedForFieldKeyword)
-                {
-                    // semi auto property should override all accessors.
-                    if ((!HasSetAccessor && !this.IsReadOnly) ||
-                        (!HasGetAccessor && !this.IsWriteOnly))
-                    {
-                        diagnostics.Add(ErrorCode.ERR_AutoPropertyMustOverrideSet, Location, this);
-                    }
-                }
+                Interlocked.CompareExchange(ref _lazyBackingFieldSymbol, backingField, _lazyBackingFieldSymbolSentinel);
             }
 
             return (SynthesizedBackingFieldSymbol?)_lazyBackingFieldSymbol;
         }
 
-        internal SynthesizedBackingFieldSymbol? GetOrCreateBackingFieldForFieldKeyword(BindingDiagnosticBag diagnostics)
+        internal SynthesizedBackingFieldSymbol? GetOrCreateBackingFieldForFieldKeyword()
         {
-            return GetOrCreateBackingField(isCreatedForFieldKeyword: true, isEarlyConstructed: false, diagnostics);
+            return GetOrCreateBackingField(isCreatedForFieldKeyword: true, isEarlyConstructed: false);
         }
 
         private void EnsureSignatureGuarded(BindingDiagnosticBag diagnostics)
@@ -423,6 +425,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal void MarkBackingFieldAsCalculated()
         {
             Interlocked.CompareExchange(ref _lazyBackingFieldSymbol, null, _lazyBackingFieldSymbolSentinel);
+            if (!IsOverride || _lazyBackingFieldSymbol is null)
+            {
+                return;
+            }
+
+            var fieldSymbol = (SynthesizedBackingFieldSymbol)_lazyBackingFieldSymbol;
+            if (fieldSymbol.IsCreatedForFieldKeyword &&
+                Interlocked.CompareExchange(ref _semiAutoPropertyHasGivenMustOverrideDiagnostic, new object(), null) == null)
+            {
+                // semi auto property should override all accessors.
+                if ((!HasSetAccessor && !this.IsReadOnly) ||
+                    (!HasGetAccessor && !this.IsWriteOnly))
+                {
+                    _diagnostics.Add(ErrorCode.ERR_AutoPropertyMustOverrideSet, Location, this);
+                }
+            }
         }
 
         /// <summary>
