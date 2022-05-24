@@ -301,11 +301,22 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols
                     isPermissionRequestAction = True
 
                 Case Else
-                    ' BC31206: Security attribute '{0}' has an invalid SecurityAction value '{1}'
-                    diagnostics.Add(ERRID.ERR_SecurityAttributeInvalidActionTypeOrMethod,
-                                    If(nodeOpt IsNot Nothing, nodeOpt.ArgumentList.Arguments(0).GetLocation(), NoLocation.Singleton),
-                                    If(nodeOpt IsNot Nothing, nodeOpt.Name.ToString, ""),
-                                    If(nodeOpt IsNot Nothing, nodeOpt.ArgumentList.Arguments(0).ToString(), ""))
+                    ' BC31214: SecurityAction value '{0}' is invalid for security attributes applied to a type or a method.
+                    Dim location As Location
+                    Dim arg As String
+                    If nodeOpt IsNot Nothing Then
+                        If nodeOpt.ArgumentList IsNot Nothing AndAlso nodeOpt.ArgumentList.Arguments.Count > 0 Then
+                            location = nodeOpt.ArgumentList.Arguments(0).GetLocation()
+                            arg = nodeOpt.ArgumentList.Arguments(0).ToString()
+                        Else
+                            location = nodeOpt.GetLocation()
+                            arg = securityAction.ToString()
+                        End If
+                    Else
+                        location = NoLocation.Singleton
+                        arg = ""
+                    End If
+                    diagnostics.Add(ERRID.ERR_SecurityAttributeInvalidActionTypeOrMethod, location, arg)
 
                     hasErrors = True
                     Return DeclarativeSecurityAction.None
