@@ -1654,25 +1654,15 @@ next:;
             Debug.Assert(ObsoleteKind != ObsoleteAttributeKind.Uninitialized);
             Debug.Assert(GetMembers().All(m => m.ObsoleteKind != ObsoleteAttributeKind.Uninitialized));
 
-            if (ObsoleteKind != ObsoleteAttributeKind.None
-                || GetMembers().All(m => m is not MethodSymbol { MethodKind: MethodKind.Constructor, ObsoleteKind: ObsoleteAttributeKind.None } method
-                                         || !method.ShouldCheckRequiredMembers()))
-            {
-                return;
-            }
-
             foreach (var member in GetMembers())
             {
-                if (!member.IsRequired())
-                {
-                    continue;
-                }
-
-                if (member.ObsoleteKind != ObsoleteAttributeKind.None)
+                if (member.IsRequired() && member.ObsoleteKind != ObsoleteAttributeKind.None)
                 {
                     // Required member '{0}' should not be attributed with 'ObsoleteAttribute' unless the containing type is obsolete or all constructors are obsolete.
                     diagnostics.Add(ErrorCode.WRN_ObsoleteMembersShouldNotBeRequired, member.Locations[0], member);
                 }
+
+                member.AfterMemberCompletedChecks(diagnostics);
             }
         }
     }

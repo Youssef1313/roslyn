@@ -621,15 +621,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return false;
         }
 
-        internal override void AfterAddingTypeMembersChecks(ConversionsBase conversions, BindingDiagnosticBag diagnostics)
+        internal override void AfterMemberCompletedChecks(BindingDiagnosticBag diagnostics)
         {
+            var conversions = new TypeConversions(ContainingAssembly.CorLibrary);
+
             // This check prevents redundant ManagedAddr diagnostics on the underlying pointer field of a fixed-size buffer
             if (!IsFixedSizeBuffer)
             {
                 Type.CheckAllConstraints(DeclaringCompilation, conversions, ErrorLocation, diagnostics);
             }
 
-            base.AfterAddingTypeMembersChecks(conversions, diagnostics);
+            base.AfterMemberCompletedChecks(diagnostics);
         }
     }
 }

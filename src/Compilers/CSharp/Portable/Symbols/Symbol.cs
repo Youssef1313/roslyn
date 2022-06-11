@@ -619,6 +619,10 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
         }
 
+        internal virtual void AfterMemberCompletedChecks(BindingDiagnosticBag diagnostics)
+        {
+        }
+
         // Note: This is no public "IsNew". This is intentional, because new has no syntactic meaning.
         // It serves only to remove a warning. Furthermore, it can not be inferred from 
         // metadata. For symbols defined in source, the modifiers in the syntax tree
