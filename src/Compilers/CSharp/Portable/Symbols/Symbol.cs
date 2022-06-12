@@ -612,6 +612,17 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         /// <summary>
+        /// Performs checks that rely on <see cref="SourcePropertySymbolBase.FieldKeywordBackingField"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calculating FieldKeywordBackingField requires accessor binding to be done, and we want to avoid the extra binding as much as we can.
+        /// So, diagnostics that depend on FieldKeywordBackingField are calculated later, after we're sure that FieldKeywordBackingField was already calculated.
+        /// </remarks>
+        internal virtual void AfterAccessorBindingChecks()
+        {
+        }
+
+        /// <summary>
         /// Perform additional checks after the member has been
         /// added to the member list of the containing type.
         /// </summary>

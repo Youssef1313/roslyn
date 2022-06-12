@@ -37,26 +37,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         Type = 1 << 3,
 
         // For named type symbols
-        StartBaseType = 1 << 4,
-        FinishBaseType = 1 << 5,
-        StartInterfaces = 1 << 6,
-        FinishInterfaces = 1 << 7,
-        EnumUnderlyingType = 1 << 8,
-        TypeArguments = 1 << 9,
-        TypeParameters = 1 << 10,
-        Members = 1 << 11,
-        TypeMembers = 1 << 12,
-        SynthesizedExplicitImplementations = 1 << 13,
-        StartMemberChecks = 1 << 14,
-        FinishMemberChecks = 1 << 15,
-        MembersCompletedChecksStarted = 1 << 16,
-        MembersCompleted = 1 << 17, // this should be the last (highest-value) part
+        EnumUnderlyingType = 1 << 4,
+        TypeArguments = 1 << 5,
+        TypeParameters = 1 << 6,
+        Members = 1 << 7,
+        TypeMembers = 1 << 8,
+        SynthesizedExplicitImplementations = 1 << 9,
+        StartMemberChecks = 1 << 10,
+        FinishMemberChecks = 1 << 11,
+        MembersCompletedChecksStarted = 1 << 12,
+        MembersCompleted = 1 << 13, // this should be the last (highest-value) part
 
-        All = (1 << 18) - 1,
+        All = (1 << 14) - 1,
 
         // This is the work we can do if ForceComplete is scoped to a particular SyntaxTree.
-        NamedTypeSymbolWithLocationAll = Attributes | StartBaseType | FinishBaseType | StartInterfaces | FinishInterfaces | EnumUnderlyingType |
-            TypeArguments | TypeParameters | Members | TypeMembers | SynthesizedExplicitImplementations | StartMemberChecks | FinishMemberChecks,
+        NamedTypeSymbolWithLocationAll = Attributes | EnumUnderlyingType | TypeArguments | TypeParameters | Members | TypeMembers |
+            SynthesizedExplicitImplementations | StartMemberChecks | FinishMemberChecks,
 
         NamedTypeSymbolAll = NamedTypeSymbolWithLocationAll | MembersCompletedChecksStarted | MembersCompleted,
 

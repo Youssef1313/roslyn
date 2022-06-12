@@ -862,6 +862,31 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal override void AfterAccessorBindingChecks()
+        {
+            base.AfterAccessorBindingChecks();
+            var compilation = DeclaringCompilation;
+            var conversions = new TypeConversions(this.ContainingAssembly.CorLibrary);
+            var diagnostics = compilation.AfterAccessorBindingDiagnostics;
+            this.Type.CheckAllConstraints(DeclaringCompilation, conversions, Location, diagnostics);
+
+            if (_explicitInterfaceType is not null)
+            {
+                var explicitInterfaceSpecifier = GetExplicitInterfaceSpecifier();
+                Debug.Assert(explicitInterfaceSpecifier != null);
+                _explicitInterfaceType.CheckAllConstraints(compilation, conversions, new SourceLocation(explicitInterfaceSpecifier.Name), diagnostics);
+            }
+
+            var parameters = this.Parameters;
+            if (parameters.Length > 0)
+            {
+                foreach (var parameter in this.Parameters)
+                {
+                    parameter.Type.CheckAllConstraints(compilation, conversions, parameter.Locations[0], diagnostics);
+                }
+            }
+        }
+
         internal override void AfterAddingTypeMembersChecks(ConversionsBase conversions, BindingDiagnosticBag diagnostics)
         {
 #nullable enable
@@ -1008,10 +1033,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if ((object)_explicitInterfaceType != null)
             {
-                var explicitInterfaceSpecifier = GetExplicitInterfaceSpecifier();
-                Debug.Assert(explicitInterfaceSpecifier != null);
-                _explicitInterfaceType.CheckAllConstraints(compilation, conversions, new SourceLocation(explicitInterfaceSpecifier.Name), diagnostics);
-
                 // Note: we delayed nullable-related checks that could pull on NonNullTypes
                 if (explicitlyImplementedProperty is object)
                 {
@@ -1643,17 +1664,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                 var parameters = this.Parameters;
                                 if (parameters.Length > 0)
                                 {
-                                    var diagnostics = BindingDiagnosticBag.GetInstance();
-                                    var conversions = new TypeConversions(this.ContainingAssembly.CorLibrary);
-
                                     foreach (var parameter in this.Parameters)
                                     {
                                         parameter.ForceComplete(locationOpt, cancellationToken);
-                                        parameter.Type.CheckAllConstraints(DeclaringCompilation, conversions, parameter.Locations[0], diagnostics);
                                     }
-
-                                    this.AddDeclarationDiagnostics(diagnostics);
-                                    diagnostics.Free();
                                 }
 
                                 DeclaringCompilation.SymbolDeclaredEvent(this);
@@ -1675,7 +1689,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             {
                                 var diagnostics = BindingDiagnosticBag.GetInstance();
                                 var conversions = new TypeConversions(this.ContainingAssembly.CorLibrary);
-                                this.Type.CheckAllConstraints(DeclaringCompilation, conversions, Location, diagnostics);
 
                                 ValidatePropertyType(diagnostics);
 

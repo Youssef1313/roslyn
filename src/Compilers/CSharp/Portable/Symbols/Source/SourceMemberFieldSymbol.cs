@@ -621,8 +621,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return false;
         }
 
-        internal override void AfterAddingTypeMembersChecks(ConversionsBase conversions, BindingDiagnosticBag diagnostics)
+        internal override void AfterAccessorBindingChecks()
         {
+            var conversions = new TypeConversions(ContainingAssembly.CorLibrary);
+            var diagnostics = DeclaringCompilation.AfterAccessorBindingDiagnostics;
+
             // This check prevents redundant ManagedAddr diagnostics on the underlying pointer field of a fixed-size buffer
             if (!IsFixedSizeBuffer)
             {

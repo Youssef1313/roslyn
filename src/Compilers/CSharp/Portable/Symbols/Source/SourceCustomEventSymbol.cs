@@ -214,18 +214,25 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             base.AfterAddingTypeMembersChecks(conversions, diagnostics);
 
-            if ((object)_explicitInterfaceType != null)
-            {
-                var explicitInterfaceSpecifier = this.ExplicitInterfaceSpecifier;
-                RoslynDebug.Assert(explicitInterfaceSpecifier != null);
-                _explicitInterfaceType.CheckAllConstraints(DeclaringCompilation, conversions, new SourceLocation(explicitInterfaceSpecifier.Name), diagnostics);
-            }
-
             if (!_explicitInterfaceImplementations.IsEmpty)
             {
                 // Note: we delayed nullable-related checks that could pull on NonNullTypes
                 EventSymbol explicitlyImplementedEvent = _explicitInterfaceImplementations[0];
                 TypeSymbol.CheckNullableReferenceTypeMismatchOnImplementingMember(this.ContainingType, this, explicitlyImplementedEvent, isExplicit: true, diagnostics);
+            }
+        }
+
+        internal override void AfterAccessorBindingChecks()
+        {
+            base.AfterAccessorBindingChecks();
+
+            var compilation = DeclaringCompilation;
+            var conversions = new TypeConversions(ContainingAssembly.CorLibrary);
+            if ((object)_explicitInterfaceType != null)
+            {
+                var explicitInterfaceSpecifier = this.ExplicitInterfaceSpecifier;
+                RoslynDebug.Assert(explicitInterfaceSpecifier != null);
+                _explicitInterfaceType.CheckAllConstraints(compilation, conversions, new SourceLocation(explicitInterfaceSpecifier.Name), compilation.AfterAccessorBindingDiagnostics);
             }
         }
 

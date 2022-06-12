@@ -86,6 +86,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         protected abstract bool AllowRefOrOut { get; }
 #nullable disable
 
+        internal sealed override void AfterAccessorBindingChecks()
+        {
+            base.AfterAccessorBindingChecks();
+            var compilation = DeclaringCompilation;
+            var conversions = new TypeConversions(ContainingAssembly.CorLibrary);
+            foreach (var parameter in this.Parameters)
+            {
+                parameter.Type.CheckAllConstraints(compilation, conversions, parameter.Locations[0], compilation.AfterAccessorBindingDiagnostics);
+            }
+        }
+
         internal sealed override void AfterAddingTypeMembersChecks(ConversionsBase conversions, BindingDiagnosticBag diagnostics)
         {
             base.AfterAddingTypeMembersChecks(conversions, diagnostics);
@@ -94,11 +105,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             ParameterHelpers.EnsureIsReadOnlyAttributeExists(compilation, Parameters, diagnostics, modifyCompilation: true);
             ParameterHelpers.EnsureNativeIntegerAttributeExists(compilation, Parameters, diagnostics, modifyCompilation: true);
             ParameterHelpers.EnsureNullableAttributeExists(compilation, this, Parameters, diagnostics, modifyCompilation: true);
-
-            foreach (var parameter in this.Parameters)
-            {
-                parameter.Type.CheckAllConstraints(compilation, conversions, parameter.Locations[0], diagnostics);
-            }
         }
 
         public sealed override bool IsVararg

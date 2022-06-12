@@ -743,7 +743,6 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var location = this.Locations[0];
 
             this.CheckModifiersAndType(diagnostics);
-            this.Type.CheckAllConstraints(compilation, conversions, location, diagnostics);
 
             if (compilation.ShouldEmitNativeIntegerAttributes(Type))
             {
@@ -763,6 +762,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 CheckExplicitImplementationAccessor(AddMethod, explicitlyImplementedEvent.AddMethod, explicitlyImplementedEvent, diagnostics);
                 CheckExplicitImplementationAccessor(RemoveMethod, explicitlyImplementedEvent.RemoveMethod, explicitlyImplementedEvent, diagnostics);
             }
+        }
+
+        internal override void AfterAccessorBindingChecks()
+        {
+            base.AfterAccessorBindingChecks();
+            var compilation = DeclaringCompilation;
+            var conversions = new TypeConversions(ContainingAssembly.CorLibrary);
+            this.Type.CheckAllConstraints(compilation, conversions, Locations[0], compilation.AfterAccessorBindingDiagnostics);
         }
 
         private void CheckExplicitImplementationAccessor(MethodSymbol? thisAccessor, MethodSymbol? otherAccessor, EventSymbol explicitlyImplementedEvent, BindingDiagnosticBag diagnostics)
