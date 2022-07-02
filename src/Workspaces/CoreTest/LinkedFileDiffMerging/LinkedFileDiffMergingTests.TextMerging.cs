@@ -66,7 +66,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.LinkedFileDiffMerging
                 "a b c d e",
                 new List<string> { "a b y d e", "a b z d e" },
                 @"
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Before_colon + @"
 a b c d e
 " + WorkspacesResources.After_colon + @"
@@ -84,7 +84,7 @@ a b y d e",
                 "a b c d e",
                 new List<string> { "a q1 c z1 e", "a q2 c z2 e" },
                 @"
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Before_colon + @"
 a b c d e
 " + WorkspacesResources.After_colon + @"
@@ -116,7 +116,7 @@ Four"
                 },
                 @"One
 
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Before_colon + @"
 Two
 Three
@@ -156,7 +156,7 @@ Five;"
                 },
                 @"One;
 
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Before_colon + @"
 Two;
 " + WorkspacesResources.After_colon + @"
@@ -165,7 +165,7 @@ TwoZ;
 TwoY;
 Three;
 
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Before_colon + @"
 Four;
 " + WorkspacesResources.After_colon + @"
@@ -190,14 +190,14 @@ Five;",
                     @"",
                 },
                 @"
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName2") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName2") + @"
 " + WorkspacesResources.Before_colon + @"
 A
 " + WorkspacesResources.After_colon + @"
 C
 */
 
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName3") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName3") + @"
 " + WorkspacesResources.Removed_colon + @"
 A
 */
@@ -217,7 +217,7 @@ B",
                     @"B",
                 },
                 @"
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Added_colon + @"
 B
 */
@@ -237,7 +237,7 @@ A",
                     @"B",
                 },
                 @"
-' " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @" 
+' " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @" 
 ' " + WorkspacesResources.Added_colon + @"
 ' B
 A",
@@ -256,7 +256,7 @@ A",
                     @"",
                 },
                 @"
-/* " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @"
+/* " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @"
 " + WorkspacesResources.Removed_colon + @"
 A
 */
@@ -276,7 +276,7 @@ B",
                     @"",
                 },
                 @"
-' " + string.Format(WorkspacesResources.Unmerged_change_from_project_0, "ProjectName1") + @" 
+' " + string.Format(WorkspacesResources.TODO_Unmerged_change_from_project_0, "ProjectName1") + @" 
 ' " + WorkspacesResources.Removed_colon + @"
 ' A
 B",
