@@ -312,7 +312,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
-        protected virtual void EnterParameters(ImmutableArray<ParameterSymbol> parameters)
+        protected void EnterParameters(ImmutableArray<ParameterSymbol> parameters)
         {
             foreach (var parameter in parameters)
             {
