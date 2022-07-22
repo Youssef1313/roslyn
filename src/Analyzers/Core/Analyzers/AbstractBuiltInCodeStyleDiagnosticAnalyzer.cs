@@ -4,27 +4,24 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Simplification;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CodeStyle
 {
-    internal abstract partial class AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract partial class AbstractBuiltInCodeStyleDiagnosticAnalyzer : DiagnosticAnalyzer, IBuiltInAnalyzer
     {
+        protected readonly DiagnosticDescriptor Descriptor;
+
         /// <summary>
-        /// Constructor for a code style analyzer with a single diagnostic descriptor and
-        /// unique <see cref="IOption2"/> code style option.
+        /// Constructor for a code style analyzer with a single diagnostic descriptor.
         /// </summary>
         /// <param name="diagnosticId">Diagnostic ID reported by this analyzer</param>
         /// <param name="enforceOnBuild">Build enforcement recommendation for this analyzer</param>
-        /// <param name="option">
-        /// Code style option that can be used to configure the given <paramref name="diagnosticId"/>.
-        /// <see langword="null"/>, if there is no such unique option.
-        /// </param>
         /// <param name="title">Title for the diagnostic descriptor</param>
         /// <param name="messageFormat">
         /// Message for the diagnostic descriptor.
@@ -35,71 +32,101 @@ namespace Microsoft.CodeAnalysis.CodeStyle
         protected AbstractBuiltInCodeStyleDiagnosticAnalyzer(
             string diagnosticId,
             EnforceOnBuild enforceOnBuild,
-            IOption2? option,
             LocalizableString title,
             LocalizableString? messageFormat = null,
             bool isUnnecessary = false,
             bool configurable = true)
-            : this(diagnosticId, enforceOnBuild, title, messageFormat, isUnnecessary, configurable)
         {
-            AddDiagnosticIdToOptionMapping(diagnosticId, option);
-        }
-
-        /// <summary>
-        /// Constructor for a code style analyzer with a single diagnostic descriptor and
-        /// two or more <see cref="IOption2 "/> code style options.
-        /// </summary>
-        /// <param name="diagnosticId">Diagnostic ID reported by this analyzer</param>
-        /// <param name="enforceOnBuild">Build enforcement recommendation for this analyzer</param>
-        /// <param name="options">
-        /// Set of two or more code style options that can be used to configure the diagnostic severity of the given diagnosticId.
-        /// </param>
-        /// <param name="title">Title for the diagnostic descriptor</param>
-        /// <param name="messageFormat">
-        /// Message for the diagnostic descriptor.
-        /// Null if the message is identical to the title.
-        /// </param>
-        /// <param name="isUnnecessary"><see langword="true"/> if the diagnostic is reported on unnecessary code; otherwise, <see langword="false"/>.</param>
-        /// <param name="configurable">Flag indicating if the reported diagnostics are configurable by the end users</param>
-        protected AbstractBuiltInCodeStyleDiagnosticAnalyzer(
-            string diagnosticId,
-            EnforceOnBuild enforceOnBuild,
-            ImmutableHashSet<IOption2> options,
-            LocalizableString title,
-            LocalizableString? messageFormat = null,
-            bool isUnnecessary = false,
-            bool configurable = true)
-            : this(diagnosticId, enforceOnBuild, title, messageFormat, isUnnecessary, configurable)
-        {
-            RoslynDebug.Assert(options != null);
-            Debug.Assert(options.Count > 1);
-            AddDiagnosticIdToOptionMapping(diagnosticId, options);
-        }
-
-        /// <summary>
-        /// Constructor for a code style analyzer with a multiple diagnostic descriptors with a code style options that can be used to configure each descriptor.
-        /// </summary>
-        protected AbstractBuiltInCodeStyleDiagnosticAnalyzer(ImmutableDictionary<DiagnosticDescriptor, IOption2> supportedDiagnosticsWithOptions)
-            : this(supportedDiagnosticsWithOptions.Keys.ToImmutableArray())
-        {
-            foreach (var (descriptor, option) in supportedDiagnosticsWithOptions)
-                AddDiagnosticIdToOptionMapping(descriptor.Id, option);
-        }
-
-        private static void AddDiagnosticIdToOptionMapping(string diagnosticId, IOption2? option)
-        {
-            if (option != null)
+            Descriptor = CreateDescriptorWithId(diagnosticId, enforceOnBuild, title, messageFormat ?? title, isUnnecessary: isUnnecessary, isConfigurable: configurable);
+            SupportedDiagnostics = ImmutableArray.Create(Descriptor);
+            if (isUnnecessary)
             {
-                AddDiagnosticIdToOptionMapping(diagnosticId, ImmutableHashSet.Create(option));
+                AddDiagnosticIdToFadingOptionMapping(diagnosticId, FadingOption);
             }
         }
 
-        private static void AddDiagnosticIdToOptionMapping(string diagnosticId, ImmutableHashSet<IOption2> options)
-            => IDEDiagnosticIdToOptionMappingHelper.AddOptionMapping(diagnosticId, options);
+        /// <summary>
+        /// This should only be called if the subtype has a descriptor with unnecessary tag.
+        /// </summary>
+        protected virtual PerLanguageOption2<bool>? FadingOption
+        {
+            get
+            {
+                Debug.Fail("Analyzers with unnecessary tag must explicitly override FadingOption and return an option or null.");
+                return null;
+            }
+        }
+
+        private static void AddDiagnosticIdToFadingOptionMapping(string diagnosticId, PerLanguageOption2<bool>? fadingOption)
+        {
+            if (fadingOption != null)
+            {
+                IDEDiagnosticIdToOptionMappingHelper.AddFadingOptionMapping(diagnosticId, fadingOption);
+            }
+        }
+
+        /// <summary>
+        /// Constructor for a code style analyzer with a multiple diagnostic descriptors.
+        /// </summary>
+        protected AbstractBuiltInCodeStyleDiagnosticAnalyzer(ImmutableArray<DiagnosticDescriptor> supportedDiagnostics)
+        {
+            SupportedDiagnostics = supportedDiagnostics;
+
+            Descriptor = SupportedDiagnostics[0];
+
+            foreach (var descriptor in supportedDiagnostics)
+            {
+                if (descriptor.ImmutableCustomTags().Contains(WellKnownDiagnosticTags.Unnecessary))
+                {
+                    AddDiagnosticIdToFadingOptionMapping(descriptor.Id, FadingOption);
+                }
+            }
+        }
 
         public abstract DiagnosticAnalyzerCategory GetAnalyzerCategory();
 
         public virtual bool OpenFileOnly(SimplifierOptions? options)
             => false;
+
+        public CodeActionRequestPriority RequestPriority => CodeActionRequestPriority.Normal;
+
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
+
+        protected static DiagnosticDescriptor CreateDescriptorWithId(
+            string id,
+            EnforceOnBuild enforceOnBuild,
+            LocalizableString title,
+            LocalizableString? messageFormat = null,
+            bool isUnnecessary = false,
+            bool isConfigurable = true,
+            LocalizableString? description = null)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => new(
+                    id, title, messageFormat ?? title,
+                    DiagnosticCategory.Style,
+                    DiagnosticSeverity.Hidden,
+                    isEnabledByDefault: true,
+                    description: description,
+                    helpLinkUri: DiagnosticHelper.GetHelpLinkForDiagnosticId(id),
+                    customTags: DiagnosticCustomTags.Create(isUnnecessary, isConfigurable, enforceOnBuild));
+#pragma warning restore RS0030 // Do not used banned APIs
+
+        /// <summary>
+        /// Flag indicating whether or not analyzer should receive analysis callbacks for generated code.
+        /// By default, code style analyzers should not run on generated code, so the value is false.
+        /// </summary>
+        protected virtual bool ReceiveAnalysisCallbacksForGeneratedCode => false;
+
+        public sealed override void Initialize(AnalysisContext context)
+        {
+            var flags = ReceiveAnalysisCallbacksForGeneratedCode ? GeneratedCodeAnalysisFlags.Analyze : GeneratedCodeAnalysisFlags.None;
+            context.ConfigureGeneratedCodeAnalysis(flags);
+            context.EnableConcurrentExecution();
+
+            InitializeWorker(new(context));
+        }
+
+        protected abstract void InitializeWorker(IDEAnalysisContext context);
     }
+
 }

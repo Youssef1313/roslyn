@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Required to avoid ambiguous reference warnings.")]
-    internal sealed partial class CSharpUseIndexOperatorDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed partial class CSharpUseIndexOperatorDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpUseIndexOperatorDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseIndexOperatorDiagnosticId,
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -95,7 +95,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
         }
 
         private void AnalyzeInvocation(
-            OperationAnalysisContext context, InfoCache infoCache)
+            IDEOperationAnalysisContext context, InfoCache infoCache)
         {
             var cancellationToken = context.CancellationToken;
             var invocationOperation = (IInvocationOperation)context.Operation;
@@ -113,7 +113,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
         }
 
         private void AnalyzePropertyReference(
-            OperationAnalysisContext context, InfoCache infoCache)
+            IDEOperationAnalysisContext context, InfoCache infoCache)
         {
             var cancellationToken = context.CancellationToken;
             var propertyReference = (IPropertyReferenceOperation)context.Operation;
@@ -135,7 +135,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
         }
 
         private void AnalyzeArrayElementReference(
-            OperationAnalysisContext context, InfoCache infoCache, IPropertySymbol arrayLengthProperty)
+            IDEOperationAnalysisContext context, InfoCache infoCache, IPropertySymbol arrayLengthProperty)
         {
             var cancellationToken = context.CancellationToken;
             var arrayElementReference = (IArrayElementReferenceOperation)context.Operation;
@@ -154,7 +154,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
         }
 
         private void AnalyzeInvokedMember(
-            OperationAnalysisContext context,
+            IDEOperationAnalysisContext context,
             InfoCache infoCache,
             IOperation? instance,
             IMethodSymbol? targetMethod,

@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InvokeDelegateWithConditionalAccess
     }
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class InvokeDelegateWithConditionalAccessAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class InvokeDelegateWithConditionalAccessAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public InvokeDelegateWithConditionalAccessAnalyzer()
             : base(IDEDiagnosticIds.InvokeDelegateWithConditionalAccessId,
@@ -32,10 +32,10 @@ namespace Microsoft.CodeAnalysis.CSharp.InvokeDelegateWithConditionalAccess
         {
         }
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(SyntaxNodeAction, SyntaxKind.IfStatement);
 
-        private void SyntaxNodeAction(SyntaxNodeAnalysisContext syntaxContext)
+        private void SyntaxNodeAction(IDESyntaxNodeAnalysisContext syntaxContext)
         {
             var styleOption = syntaxContext.GetCSharpAnalyzerOptions().PreferConditionalDelegateCall;
             if (!styleOption.Value)
@@ -104,7 +104,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InvokeDelegateWithConditionalAccess
         }
 
         private bool TryCheckSingleIfStatementForm(
-            SyntaxNodeAnalysisContext syntaxContext,
+            IDESyntaxNodeAnalysisContext syntaxContext,
             IfStatementSyntax ifStatement,
             BinaryExpressionSyntax condition,
             ExpressionStatementSyntax expressionStatement,
@@ -145,7 +145,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InvokeDelegateWithConditionalAccess
         }
 
         private void ReportDiagnostics(
-            SyntaxNodeAnalysisContext syntaxContext,
+            IDESyntaxNodeAnalysisContext syntaxContext,
             StatementSyntax firstStatement,
             IfStatementSyntax ifStatement,
             ExpressionStatementSyntax expressionStatement,
@@ -193,7 +193,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InvokeDelegateWithConditionalAccess
         }
 
         private bool TryCheckVariableAndIfStatementForm(
-            SyntaxNodeAnalysisContext syntaxContext,
+            IDESyntaxNodeAnalysisContext syntaxContext,
             IfStatementSyntax ifStatement,
             BinaryExpressionSyntax condition,
             ExpressionStatementSyntax expressionStatement,

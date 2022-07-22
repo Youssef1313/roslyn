@@ -15,24 +15,20 @@ namespace Microsoft.CodeAnalysis.CodeStyle
             : base(
                 IDEDiagnosticIds.FormattingDiagnosticId,
                 EnforceOnBuildValues.Formatting,
-                option: null,
                 new LocalizableResourceString(nameof(AnalyzersResources.Fix_formatting), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)),
                 new LocalizableResourceString(nameof(AnalyzersResources.Fix_formatting), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)))
         {
         }
-
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(Descriptor);
 
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
         protected abstract ISyntaxFormatting SyntaxFormatting { get; }
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeSyntaxTree);
 
-        private void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeSyntaxTree(IDESyntaxTreeAnalysisContext context)
         {
             var options = context.GetAnalyzerOptions().GetSyntaxFormattingOptions(SyntaxFormatting);
             FormattingAnalyzerHelper.AnalyzeSyntaxTree(context, SyntaxFormatting, Descriptor, options);

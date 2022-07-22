@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
     ///     
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal partial class CSharpAsAndNullCheckDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal partial class CSharpAsAndNullCheckDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpAsAndNullCheckDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.InlineAsTypeCheckId,
@@ -38,14 +38,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
         {
         }
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(SyntaxNodeAction,
                 SyntaxKind.EqualsExpression,
                 SyntaxKind.NotEqualsExpression,
                 SyntaxKind.IsExpression,
                 SyntaxKind.IsPatternExpression);
 
-        private void SyntaxNodeAction(SyntaxNodeAnalysisContext syntaxContext)
+        private void SyntaxNodeAction(IDESyntaxNodeAnalysisContext syntaxContext)
         {
             var node = syntaxContext.Node;
             var syntaxTree = node.SyntaxTree;

@@ -33,7 +33,6 @@ namespace Microsoft.CodeAnalysis.SimplifyLinqExpression
         public AbstractSimplifyLinqExpressionDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.SimplifyLinqExpressionDiagnosticId,
                    EnforceOnBuildValues.SimplifyLinqExpression,
-                   option: null,
                    title: new LocalizableResourceString(nameof(AnalyzersResources.Simplify_LINQ_expression), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)))
         {
         }
@@ -43,10 +42,10 @@ namespace Microsoft.CodeAnalysis.SimplifyLinqExpression
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(OnCompilationStart);
 
-        private void OnCompilationStart(CompilationStartAnalysisContext context)
+        private void OnCompilationStart(IDECompilationStartAnalysisContext context)
         {
             if (!TryGetEnumerableTypeSymbol(context.Compilation, out var enumerableType))
             {
@@ -112,7 +111,7 @@ namespace Microsoft.CodeAnalysis.SimplifyLinqExpression
             }
         }
 
-        public void AnalyzeInvocationOperation(OperationAnalysisContext context, INamedTypeSymbol enumerableType, IMethodSymbol whereMethod, ImmutableArray<IMethodSymbol> linqMethods)
+        public void AnalyzeInvocationOperation(IDEOperationAnalysisContext context, INamedTypeSymbol enumerableType, IMethodSymbol whereMethod, ImmutableArray<IMethodSymbol> linqMethods)
         {
             if (context.Operation.Syntax.GetDiagnostics().Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
             {

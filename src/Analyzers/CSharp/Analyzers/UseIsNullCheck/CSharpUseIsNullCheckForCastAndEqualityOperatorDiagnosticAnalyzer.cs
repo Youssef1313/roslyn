@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal class CSharpUseIsNullCheckForCastAndEqualityOperatorDiagnosticAnalyzer
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private static readonly ImmutableDictionary<string, string?> s_properties =
             ImmutableDictionary<string, string?>.Empty.Add(UseIsNullConstants.Kind, UseIsNullConstants.CastAndEqualityKey);
@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(context =>
             {
                 if (context.Compilation.LanguageVersion() < LanguageVersion.CSharp7)
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
                 context.RegisterSyntaxNodeAction(n => AnalyzeSyntax(n), SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression);
             });
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var option = context.GetAnalyzerOptions().PreferIsNullCheckOverReferenceEqualityMethod;
             if (!option.Value)

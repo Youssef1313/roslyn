@@ -18,7 +18,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ConvertTypeOfToNameOf
             MyBase.New(s_title)
         End Sub
 
-        Protected Overrides Function IsValidTypeofAction(context As OperationAnalysisContext) As Boolean
+        Protected Overrides Function IsValidTypeofAction(context As IDEOperationAnalysisContext) As Boolean
             Dim node = context.Operation.Syntax
             Dim compilation = context.Compilation
             Dim isValidLanguage = DirectCast(compilation, VisualBasicCompilation).LanguageVersion >= LanguageVersion.VisualBasic14

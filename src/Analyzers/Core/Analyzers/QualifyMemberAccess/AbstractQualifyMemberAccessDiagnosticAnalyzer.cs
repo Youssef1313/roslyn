@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.QualifyMemberAccess
         TLanguageKindEnum,
         TExpressionSyntax,
         TSimpleNameSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TLanguageKindEnum : struct
         where TExpressionSyntax : SyntaxNode
         where TSimpleNameSyntax : TExpressionSyntax
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.QualifyMemberAccess
 
         protected abstract bool IsAlreadyQualifiedMemberAccess(TExpressionSyntax node);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterOperationAction(AnalyzeOperation, OperationKind.FieldReference, OperationKind.PropertyReference, OperationKind.MethodReference, OperationKind.Invocation);
 
         protected abstract Location GetLocation(IOperation operation);
@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.QualifyMemberAccess
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        private void AnalyzeOperation(OperationAnalysisContext context)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context)
         {
             if (context.ContainingSymbol.IsStatic)
             {
@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.QualifyMemberAccess
             }
         }
 
-        private void AnalyzeOperation(OperationAnalysisContext context, IOperation operation, IOperation? instanceOperation)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context, IOperation operation, IOperation? instanceOperation)
         {
             // this is a static reference so we don't care if it's qualified
             if (instanceOperation == null)

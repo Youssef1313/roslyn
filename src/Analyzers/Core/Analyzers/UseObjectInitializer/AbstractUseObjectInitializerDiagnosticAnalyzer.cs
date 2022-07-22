@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.UseObjectInitializer
         TMemberAccessExpressionSyntax,
         TAssignmentStatementSyntax,
         TVariableDeclaratorSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TExpressionSyntax : SyntaxNode
         where TStatementSyntax : SyntaxNode
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.UseObjectInitializer
 
         protected abstract ISyntaxFacts GetSyntaxFacts();
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.UseObjectInitializer
 
         protected abstract bool IsValidContainingStatement(TStatementSyntax node);
 
-        private void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        private void AnalyzeNode(IDESyntaxNodeAnalysisContext context)
         {
             var objectCreationExpression = (TObjectCreationExpressionSyntax)context.Node;
             var language = objectCreationExpression.Language;
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.UseObjectInitializer
         }
 
         private void FadeOutCode(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             ImmutableArray<Match<TExpressionSyntax, TStatementSyntax, TMemberAccessExpressionSyntax, TAssignmentStatementSyntax>> matches,
             ImmutableArray<Location> locations)
         {

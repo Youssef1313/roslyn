@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
     /// code that can be used).
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class CSharpIsAndCastCheckWithoutNameDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class CSharpIsAndCastCheckWithoutNameDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private const string CS0165 = nameof(CS0165); // Use of unassigned local variable 's'
         private const string CS0103 = nameof(CS0103); // Name of the variable doesn't live in context
@@ -52,7 +52,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
         }
 
         private void SyntaxNodeAction(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             INamedTypeSymbol? expressionType)
         {
             var cancellationToken = context.CancellationToken;

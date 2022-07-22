@@ -18,10 +18,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UseInferredMemberName
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed class CSharpUseInferredMemberNameDiagnosticAnalyzer : AbstractUseInferredMemberNameDiagnosticAnalyzer
     {
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.NameColon, SyntaxKind.NameEquals);
 
-        protected override void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        protected override void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             switch (context.Node.Kind())
             {
@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseInferredMemberName
             }
         }
 
-        private void ReportDiagnosticsIfNeeded(NameColonSyntax nameColon, SyntaxNodeAnalysisContext context)
+        private void ReportDiagnosticsIfNeeded(NameColonSyntax nameColon, IDESyntaxNodeAnalysisContext context)
         {
             if (!nameColon.Parent.IsKind(SyntaxKind.Argument, out ArgumentSyntax? argument))
             {
@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseInferredMemberName
                     additionalUnnecessaryLocations: ImmutableArray.Create(syntaxTree.GetLocation(fadeSpan))));
         }
 
-        private void ReportDiagnosticsIfNeeded(NameEqualsSyntax nameEquals, SyntaxNodeAnalysisContext context)
+        private void ReportDiagnosticsIfNeeded(NameEqualsSyntax nameEquals, IDESyntaxNodeAnalysisContext context)
         {
             if (!nameEquals.Parent.IsKind(SyntaxKind.AnonymousObjectMemberDeclarator, out AnonymousObjectMemberDeclaratorSyntax? anonCtor))
             {

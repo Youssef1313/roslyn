@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.MakeFieldReadonly
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal sealed class MakeFieldReadonlyDiagnosticAnalyzer
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public MakeFieldReadonlyDiagnosticAnalyzer()
             : base(
@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.MakeFieldReadonly
         // We need to analyze generated code to get callbacks for read/writes to non-generated members in generated code.
         protected override bool ReceiveAnalysisCallbacksForGeneratedCode => true;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(compilationStartContext =>
             {
@@ -66,12 +66,12 @@ namespace Microsoft.CodeAnalysis.MakeFieldReadonly
                 return;
 
                 // Local functions.
-                void AnalyzeFieldSymbol(SymbolAnalysisContext symbolContext)
+                void AnalyzeFieldSymbol(IDESymbolAnalysisContext symbolContext)
                 {
                     _ = TryGetOrInitializeFieldState((IFieldSymbol)symbolContext.Symbol, symbolContext.Options, symbolContext.CancellationToken);
                 }
 
-                void AnalyzeOperation(OperationAnalysisContext operationContext)
+                void AnalyzeOperation(IDEOperationAnalysisContext operationContext)
                 {
                     var fieldReference = (IFieldReferenceOperation)operationContext.Operation;
                     var (isCandidate, written) = TryGetOrInitializeFieldState(fieldReference.Field, operationContext.Options, operationContext.CancellationToken);
@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.MakeFieldReadonly
                     }
                 }
 
-                void OnSymbolEnd(SymbolAnalysisContext symbolEndContext)
+                void OnSymbolEnd(IDESymbolAnalysisContext symbolEndContext)
                 {
                     // Report diagnostics for candidate fields that are not written outside constructor and field initializer.
                     var members = ((INamedTypeSymbol)symbolEndContext.Symbol).GetMembers();

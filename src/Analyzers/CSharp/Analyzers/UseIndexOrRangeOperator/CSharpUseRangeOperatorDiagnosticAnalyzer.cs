@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Required to avoid ambiguous reference warnings.")]
-    internal sealed partial class CSharpUseRangeOperatorDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed partial class CSharpUseRangeOperatorDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         // public const string UseIndexer = nameof(UseIndexer);
         public const string ComputedRange = nameof(ComputedRange);
@@ -52,7 +52,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -73,7 +73,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIndexOrRangeOperator
             });
         }
 
-        private void AnalyzeInvocation(OperationAnalysisContext context, InfoCache infoCache)
+        private void AnalyzeInvocation(IDEOperationAnalysisContext context, InfoCache infoCache)
         {
             // Check if the user wants these operators.
             var option = context.GetCSharpAnalyzerOptions().PreferRangeOperator;

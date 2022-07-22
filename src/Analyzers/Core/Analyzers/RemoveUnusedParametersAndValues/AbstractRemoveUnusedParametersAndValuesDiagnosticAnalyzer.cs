@@ -52,7 +52,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
     ///        though this may change in future.
     ///        This diagnostic configuration is controlled by <see cref="CodeStyleOptions2.UnusedParameters"/> option.
     /// </summary>
-    internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public const string DiscardVariableName = "_";
 
@@ -183,7 +183,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
         // Hence, we can support incremental span based method body analysis.
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
 

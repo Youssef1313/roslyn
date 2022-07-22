@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.UseCompoundAssignment
         TSyntaxKind,
         TAssignmentSyntax,
         TBinaryExpressionSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TAssignmentSyntax : SyntaxNode
         where TBinaryExpressionSyntax : SyntaxNode
@@ -64,10 +64,10 @@ namespace Microsoft.CodeAnalysis.UseCompoundAssignment
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeAssignment, GetAnalysisKind());
 
-        private void AnalyzeAssignment(SyntaxNodeAnalysisContext context)
+        private void AnalyzeAssignment(IDESyntaxNodeAnalysisContext context)
         {
             var assignment = (TAssignmentSyntax)context.Node;
             var cancellationToken = context.CancellationToken;

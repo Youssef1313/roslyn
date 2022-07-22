@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.UseConditionalExpression
         {
         }
 
-        protected sealed override CodeStyleOption2<bool> GetStylePreference(OperationAnalysisContext context)
+        protected sealed override CodeStyleOption2<bool> GetStylePreference(IDEOperationAnalysisContext context)
             => context.GetAnalyzerOptions().PreferConditionalExpressionOverAssignment;
 
         protected override bool TryMatchPattern(IConditionalOperation ifOperation, ISymbol containingSymbol)

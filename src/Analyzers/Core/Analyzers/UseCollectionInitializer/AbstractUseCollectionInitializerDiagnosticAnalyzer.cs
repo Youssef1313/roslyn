@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.UseCollectionInitializer
         TInvocationExpressionSyntax,
         TExpressionStatementSyntax,
         TVariableDeclaratorSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TExpressionSyntax : SyntaxNode
         where TStatementSyntax : SyntaxNode
@@ -59,10 +59,10 @@ namespace Microsoft.CodeAnalysis.UseCollectionInitializer
         protected abstract ISyntaxFacts GetSyntaxFacts();
         protected abstract bool AreCollectionInitializersSupported(Compilation compilation);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(OnCompilationStart);
 
-        private void OnCompilationStart(CompilationStartAnalysisContext context)
+        private void OnCompilationStart(IDECompilationStartAnalysisContext context)
         {
             if (!AreCollectionInitializersSupported(context.Compilation))
                 return;
@@ -83,7 +83,7 @@ namespace Microsoft.CodeAnalysis.UseCollectionInitializer
             }
         }
 
-        private void AnalyzeNode(SyntaxNodeAnalysisContext context, INamedTypeSymbol ienumerableType)
+        private void AnalyzeNode(IDESyntaxNodeAnalysisContext context, INamedTypeSymbol ienumerableType)
         {
             var semanticModel = context.SemanticModel;
             var objectCreationExpression = (TObjectCreationExpressionSyntax)context.Node;
@@ -131,7 +131,7 @@ namespace Microsoft.CodeAnalysis.UseCollectionInitializer
         }
 
         private void FadeOutCode(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             ImmutableArray<TExpressionStatementSyntax> matches,
             ImmutableArray<Location> locations)
         {

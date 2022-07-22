@@ -18,7 +18,6 @@ namespace Microsoft.CodeAnalysis.RemoveRedundantEquality
         protected AbstractRemoveRedundantEqualityDiagnosticAnalyzer(ISyntaxFacts syntaxFacts)
             : base(IDEDiagnosticIds.RemoveRedundantEqualityDiagnosticId,
                    EnforceOnBuildValues.RemoveRedundantEquality,
-                   option: null,
                    new LocalizableResourceString(nameof(AnalyzersResources.Remove_redundant_equality), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)))
         {
             _syntaxFacts = syntaxFacts;
@@ -27,10 +26,10 @@ namespace Microsoft.CodeAnalysis.RemoveRedundantEquality
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterOperationAction(AnalyzeBinaryOperator, OperationKind.BinaryOperator);
 
-        private void AnalyzeBinaryOperator(OperationAnalysisContext context)
+        private void AnalyzeBinaryOperator(IDEOperationAnalysisContext context)
         {
             var operation = (IBinaryOperation)context.Operation;
             if (operation.OperatorMethod is not null)

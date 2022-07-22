@@ -14,13 +14,11 @@ namespace Microsoft.CodeAnalysis.CSharp.RemoveUnnecessaryDiscardDesignation
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed class CSharpRemoveUnnecessaryDiscardDesignationDiagnosticAnalyzer
-        : AbstractBuiltInUnnecessaryCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
     {
         public CSharpRemoveUnnecessaryDiscardDesignationDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.RemoveUnnecessaryDiscardDesignationDiagnosticId,
                    EnforceOnBuildValues.RemoveUnnecessaryDiscardDesignation,
-                   option: null,
-                   fadingOption: null,
                    new LocalizableResourceString(nameof(CSharpAnalyzersResources.Remove_unnessary_discard), CSharpAnalyzersResources.ResourceManager, typeof(CSharpAnalyzersResources)),
                    new LocalizableResourceString(nameof(CSharpAnalyzersResources.Discard_can_be_removed), CSharpAnalyzersResources.ResourceManager, typeof(CSharpAnalyzersResources)))
         {
@@ -29,7 +27,7 @@ namespace Microsoft.CodeAnalysis.CSharp.RemoveUnnecessaryDiscardDesignation
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -40,7 +38,7 @@ namespace Microsoft.CodeAnalysis.CSharp.RemoveUnnecessaryDiscardDesignation
             });
         }
 
-        private void AnalyzeDiscardDesignation(SyntaxNodeAnalysisContext context)
+        private void AnalyzeDiscardDesignation(IDESyntaxNodeAnalysisContext context)
         {
             var discard = (DiscardDesignationSyntax)context.Node;
             if (discard.Parent is DeclarationPatternSyntax)

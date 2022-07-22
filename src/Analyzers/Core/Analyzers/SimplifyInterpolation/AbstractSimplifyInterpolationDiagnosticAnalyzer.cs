@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.SimplifyInterpolation
 {
     internal abstract class AbstractSimplifyInterpolationDiagnosticAnalyzer<
         TInterpolationSyntax,
-        TExpressionSyntax> : AbstractBuiltInUnnecessaryCodeStyleDiagnosticAnalyzer
+        TExpressionSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TInterpolationSyntax : SyntaxNode
         where TExpressionSyntax : SyntaxNode
     {
@@ -21,7 +21,6 @@ namespace Microsoft.CodeAnalysis.SimplifyInterpolation
            : base(IDEDiagnosticIds.SimplifyInterpolationId,
                   EnforceOnBuildValues.SimplifyInterpolation,
                   CodeStyleOptions2.PreferSimplifiedInterpolation,
-                  fadingOption: null,
                   new LocalizableResourceString(nameof(AnalyzersResources.Simplify_interpolation), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)),
                   new LocalizableResourceString(nameof(AnalyzersResources.Interpolation_can_be_simplified), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)))
         {
@@ -36,10 +35,10 @@ namespace Microsoft.CodeAnalysis.SimplifyInterpolation
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterOperationAction(AnalyzeInterpolation, OperationKind.Interpolation);
 
-        private void AnalyzeInterpolation(OperationAnalysisContext context)
+        private void AnalyzeInterpolation(IDEOperationAnalysisContext context)
         {
             var option = context.GetAnalyzerOptions().PreferSimplifiedInterpolation;
             if (!option.Value)

@@ -23,7 +23,7 @@ using Roslyn.Utilities;
 namespace Microsoft.CodeAnalysis.CSharp.UseUtf8StringLiteral
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class UseUtf8StringLiteralDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class UseUtf8StringLiteralDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public enum ArrayCreationOperationLocation
         {
@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseUtf8StringLiteral
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(context =>
             {
                 if (!context.Compilation.LanguageVersion().IsCSharp11OrAbove())
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseUtf8StringLiteral
                 context.RegisterOperationAction(c => AnalyzeOperation(c, expressionType), OperationKind.ArrayCreation);
             });
 
-        private void AnalyzeOperation(OperationAnalysisContext context, INamedTypeSymbol? expressionType)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context, INamedTypeSymbol? expressionType)
         {
             var arrayCreationOperation = (IArrayCreationOperation)context.Operation;
 
@@ -115,7 +115,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseUtf8StringLiteral
             }
         }
 
-        private void ReportParameterArrayDiagnostic(OperationAnalysisContext context, SyntaxNode syntaxNode, ImmutableArray<IOperation> elements, ReportDiagnostic severity, ArrayCreationOperationLocation operationLocation)
+        private void ReportParameterArrayDiagnostic(IDEOperationAnalysisContext context, SyntaxNode syntaxNode, ImmutableArray<IOperation> elements, ReportDiagnostic severity, ArrayCreationOperationLocation operationLocation)
         {
             // When the first elements parent is as argument, or an edge case for collection
             // initializers where the Add method takes a param array, it means we have a parameter array.
@@ -127,7 +127,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseUtf8StringLiteral
             ReportDiagnostic(context, syntaxNode, severity, location, operationLocation);
         }
 
-        private void ReportArrayCreationDiagnostic(OperationAnalysisContext context, SyntaxNode syntaxNode, ReportDiagnostic severity)
+        private void ReportArrayCreationDiagnostic(IDEOperationAnalysisContext context, SyntaxNode syntaxNode, ReportDiagnostic severity)
         {
             // When the user writes the array creation we raise the diagnostic on the first token, which will be the "new" keyword
             var location = syntaxNode.GetFirstToken().GetLocation();
@@ -135,7 +135,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseUtf8StringLiteral
             ReportDiagnostic(context, syntaxNode, severity, location, ArrayCreationOperationLocation.Current);
         }
 
-        private void ReportDiagnostic(OperationAnalysisContext context, SyntaxNode syntaxNode, ReportDiagnostic severity, Location location, ArrayCreationOperationLocation operationLocation)
+        private void ReportDiagnostic(IDEOperationAnalysisContext context, SyntaxNode syntaxNode, ReportDiagnostic severity, Location location, ArrayCreationOperationLocation operationLocation)
         {
             // Store the original syntax location so the code fix can find the operation again
             var additionalLocations = ImmutableArray.Create(syntaxNode.GetLocation());

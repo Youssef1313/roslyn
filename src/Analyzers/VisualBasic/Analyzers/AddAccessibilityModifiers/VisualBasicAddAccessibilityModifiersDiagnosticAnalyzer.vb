@@ -15,20 +15,20 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.AddAccessibilityModifiers
         Inherits AbstractAddAccessibilityModifiersDiagnosticAnalyzer(Of CompilationUnitSyntax)
 
         Protected Overrides Sub ProcessCompilationUnit(
-                context As SyntaxTreeAnalysisContext,
+                context As IDESyntaxTreeAnalysisContext,
                 [option] As CodeStyleOption2(Of AccessibilityModifiersRequired), compilationUnit As CompilationUnitSyntax)
 
             ProcessMembers(context, [option], compilationUnit.Members)
         End Sub
 
-        Private Sub ProcessMembers(context As SyntaxTreeAnalysisContext,
+        Private Sub ProcessMembers(context As IDESyntaxTreeAnalysisContext,
                                    [option] As CodeStyleOption2(Of AccessibilityModifiersRequired), members As SyntaxList(Of StatementSyntax))
             For Each member In members
                 ProcessMember(context, [option], member)
             Next
         End Sub
 
-        Private Sub ProcessMember(context As SyntaxTreeAnalysisContext,
+        Private Sub ProcessMember(context As IDESyntaxTreeAnalysisContext,
                               [option] As CodeStyleOption2(Of AccessibilityModifiersRequired), member As StatementSyntax)
 
             If member.Kind() = SyntaxKind.NamespaceBlock Then

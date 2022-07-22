@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Features.EmbeddedLanguages.Json.LanguageService
     /// <summary>
     /// Analyzer that reports diagnostics in strings that we know are JSON text.
     /// </summary>
-    internal abstract class AbstractJsonDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract class AbstractJsonDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public const string DiagnosticId = "JSON001";
 
@@ -35,10 +35,10 @@ namespace Microsoft.CodeAnalysis.Features.EmbeddedLanguages.Json.LanguageService
         public override bool OpenFileOnly(SimplifierOptions? options)
             => false;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSemanticModelAction(Analyze);
 
-        public void Analyze(SemanticModelAnalysisContext context)
+        public void Analyze(IDESemanticModelAnalysisContext context)
         {
             var semanticModel = context.SemanticModel;
             var syntaxTree = semanticModel.SyntaxTree;
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Features.EmbeddedLanguages.Json.LanguageService
         }
 
         private void Analyze(
-            SemanticModelAnalysisContext context,
+            IDESemanticModelAnalysisContext context,
             JsonLanguageDetector detector,
             SyntaxNode node,
             CancellationToken cancellationToken)

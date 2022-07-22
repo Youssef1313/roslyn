@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConsecutiveBracePlacement
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class ConsecutiveBracePlacementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class ConsecutiveBracePlacementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public ConsecutiveBracePlacementDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.ConsecutiveBracePlacementDiagnosticId,
@@ -28,10 +28,10 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConsecutiveBracePlacement
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeTree);
 
-        private void AnalyzeTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = context.GetCSharpAnalyzerOptions().AllowBlankLinesBetweenConsecutiveBraces;
             if (option.Value)
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConsecutiveBracePlacement
             Recurse(context, option.Notification.Severity, stack);
         }
 
-        private void Recurse(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, ArrayBuilder<SyntaxNode> stack)
+        private void Recurse(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, ArrayBuilder<SyntaxNode> stack)
         {
             var tree = context.Tree;
             var cancellationToken = context.CancellationToken;
@@ -71,7 +71,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConsecutiveBracePlacement
             }
         }
 
-        private void ProcessToken(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, SourceText text, SyntaxToken token)
+        private void ProcessToken(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, SourceText text, SyntaxToken token)
         {
             if (!HasExcessBlankLinesAfter(text, token, out var secondBrace, out _))
                 return;

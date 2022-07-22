@@ -22,7 +22,6 @@ namespace Microsoft.CodeAnalysis.PopulateSwitch
         protected AbstractPopulateSwitchDiagnosticAnalyzer(string diagnosticId, EnforceOnBuild enforceOnBuild)
             : base(diagnosticId,
                    enforceOnBuild,
-                   option: null,
                    s_localizableTitle, s_localizableMessage)
         {
         }
@@ -39,10 +38,10 @@ namespace Microsoft.CodeAnalysis.PopulateSwitch
 
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterOperationAction(AnalyzeOperation, OperationKind);
 
-        private void AnalyzeOperation(OperationAnalysisContext context)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context)
         {
             var switchOperation = (TSwitchOperation)context.Operation;
             if (switchOperation.Syntax is not TSwitchSyntax switchBlock || IsSwitchTypeUnknown(switchOperation))

@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseTupleSwap
     /// 
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class CSharpUseTupleSwapDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class CSharpUseTupleSwapDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpUseTupleSwapDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseTupleSwapDiagnosticId,
@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseTupleSwap
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseTupleSwap
             });
         }
 
-        private void AnalyzeLocalDeclarationStatement(SyntaxNodeAnalysisContext syntaxContext)
+        private void AnalyzeLocalDeclarationStatement(IDESyntaxNodeAnalysisContext syntaxContext)
         {
             var styleOption = syntaxContext.GetCSharpAnalyzerOptions().PreferTupleSwap;
             if (!styleOption.Value)

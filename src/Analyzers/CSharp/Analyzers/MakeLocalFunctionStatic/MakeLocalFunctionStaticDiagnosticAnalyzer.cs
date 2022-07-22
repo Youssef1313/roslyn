@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.CodeAnalysis.CSharp.MakeLocalFunctionStatic
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class MakeLocalFunctionStaticDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class MakeLocalFunctionStaticDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public MakeLocalFunctionStaticDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.MakeLocalFunctionStaticDiagnosticId,
@@ -26,14 +26,14 @@ namespace Microsoft.CodeAnalysis.CSharp.MakeLocalFunctionStatic
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(context =>
             {
                 if (MakeLocalFunctionStaticHelper.IsStaticLocalFunctionSupported(context.Compilation.LanguageVersion()))
                     context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.LocalFunctionStatement);
             });
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var localFunction = (LocalFunctionStatementSyntax)context.Node;
             if (localFunction.Modifiers.Any(SyntaxKind.StaticKeyword))

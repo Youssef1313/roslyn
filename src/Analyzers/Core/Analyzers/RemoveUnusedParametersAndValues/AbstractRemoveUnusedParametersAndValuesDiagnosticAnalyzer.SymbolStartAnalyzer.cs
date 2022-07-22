@@ -20,7 +20,7 @@ using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
 {
-    internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private sealed partial class SymbolStartAnalyzer
         {
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
             }
 
             public static void CreateAndRegisterActions(
-                CompilationStartAnalysisContext context,
+                IDECompilationStartAnalysisContext context,
                 AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer analyzer)
             {
                 var attributeSetForMethodsToIgnore = ImmutableHashSet.CreateRange(GetAttributesForMethodsToIgnore(context.Compilation).WhereNotNull());
@@ -99,25 +99,25 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                 }
             }
 
-            private void OnSymbolStart(SymbolStartAnalysisContext context)
+            private void OnSymbolStart(IDESymbolStartAnalysisContext context)
             {
                 context.RegisterOperationBlockStartAction(OnOperationBlock);
                 context.RegisterSymbolEndAction(OnSymbolEnd);
             }
 
-            private void OnOperationBlock(OperationBlockStartAnalysisContext context)
+            private void OnOperationBlock(IDEOperationBlockStartAnalysisContext context)
             {
                 context.RegisterOperationAction(OnMethodReference, OperationKind.MethodReference);
                 BlockAnalyzer.Analyze(context, this);
             }
 
-            private void OnMethodReference(OperationAnalysisContext context)
+            private void OnMethodReference(IDEOperationAnalysisContext context)
             {
                 var methodBinding = (IMethodReferenceOperation)context.Operation;
                 _methodsUsedAsDelegates.GetOrAdd(methodBinding.Method.OriginalDefinition, true);
             }
 
-            private void OnSymbolEnd(SymbolAnalysisContext context)
+            private void OnSymbolEnd(IDESymbolAnalysisContext context)
             {
                 foreach (var (parameter, hasReference) in _unusedParameters)
                 {

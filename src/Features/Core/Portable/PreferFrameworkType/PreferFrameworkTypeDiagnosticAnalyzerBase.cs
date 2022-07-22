@@ -12,7 +12,7 @@ using Roslyn.Utilities;
 namespace Microsoft.CodeAnalysis.PreferFrameworkType
 {
     internal abstract class PreferFrameworkTypeDiagnosticAnalyzerBase<TSyntaxKind, TExpressionSyntax, TPredefinedTypeSyntax> :
-        AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TExpressionSyntax : SyntaxNode
         where TPredefinedTypeSyntax : TExpressionSyntax
@@ -44,10 +44,10 @@ namespace Microsoft.CodeAnalysis.PreferFrameworkType
         protected abstract bool IsPredefinedTypeReplaceableWithFrameworkType(TPredefinedTypeSyntax node);
         protected abstract bool IsInMemberAccessOrCrefReferenceContext(TExpressionSyntax node);
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKindsOfInterest);
 
-        protected void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        protected void AnalyzeNode(IDESyntaxNodeAnalysisContext context)
         {
             var options = context.GetAnalyzerOptions();
 

@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConstructorInitializerPlacement
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class ConstructorInitializerPlacementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class ConstructorInitializerPlacementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public ConstructorInitializerPlacementDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.ConstructorInitializerPlacementDiagnosticId,
@@ -29,10 +29,10 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConstructorInitializerPlacement
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeTree);
 
-        private void AnalyzeTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = context.GetCSharpAnalyzerOptions().AllowBlankLineAfterColonInConstructorInitializer;
             if (option.Value)
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConstructorInitializerPlacement
             Recurse(context, option.Notification.Severity, context.Tree.GetRoot(context.CancellationToken));
         }
 
-        private void Recurse(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode node)
+        private void Recurse(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode node)
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConstructorInitializerPlacement
         }
 
         private void ProcessConstructorInitializer(
-            SyntaxTreeAnalysisContext context, ReportDiagnostic severity, ConstructorInitializerSyntax initializer)
+            IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, ConstructorInitializerSyntax initializer)
         {
             var sourceText = context.Tree.GetText(context.CancellationToken);
 

@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.CodeAnalysis.AddAccessibilityModifiers
 {
     internal abstract class AbstractAddAccessibilityModifiersDiagnosticAnalyzer<TCompilationUnitSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TCompilationUnitSyntax : SyntaxNode
     {
         protected AbstractAddAccessibilityModifiersDiagnosticAnalyzer()
@@ -23,10 +23,10 @@ namespace Microsoft.CodeAnalysis.AddAccessibilityModifiers
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeSyntaxTree);
 
-        private void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeSyntaxTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = context.GetAnalyzerOptions().RequireAccessibilityModifiers;
             if (option.Value == AccessibilityModifiersRequired.Never)
@@ -35,6 +35,6 @@ namespace Microsoft.CodeAnalysis.AddAccessibilityModifiers
             ProcessCompilationUnit(context, option, (TCompilationUnitSyntax)context.Tree.GetRoot(context.CancellationToken));
         }
 
-        protected abstract void ProcessCompilationUnit(SyntaxTreeAnalysisContext context, CodeStyleOption2<AccessibilityModifiersRequired> option, TCompilationUnitSyntax compilationUnitSyntax);
+        protected abstract void ProcessCompilationUnit(IDESyntaxTreeAnalysisContext context, CodeStyleOption2<AccessibilityModifiersRequired> option, TCompilationUnitSyntax compilationUnitSyntax);
     }
 }

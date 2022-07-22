@@ -4,10 +4,8 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis.CodeStyle;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Precedence;
 using Microsoft.CodeAnalysis.RemoveUnnecessaryParentheses;
 using Roslyn.Utilities;
@@ -16,7 +14,7 @@ namespace Microsoft.CodeAnalysis.AddRequiredParentheses
 {
     internal abstract class AbstractAddRequiredParenthesesDiagnosticAnalyzer<
         TExpressionSyntax, TBinaryLikeExpressionSyntax, TLanguageKindEnum>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TExpressionSyntax : SyntaxNode
         where TBinaryLikeExpressionSyntax : TExpressionSyntax
         where TLanguageKindEnum : struct
@@ -80,12 +78,12 @@ namespace Microsoft.CodeAnalysis.AddRequiredParentheses
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeSyntax, GetSyntaxNodeKinds());
 
         protected abstract ImmutableArray<TLanguageKindEnum> GetSyntaxNodeKinds();
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var binaryLike = (TBinaryLikeExpressionSyntax)context.Node;
             var parent = TryGetAppropriateParent(binaryLike);
@@ -131,7 +129,7 @@ namespace Microsoft.CodeAnalysis.AddRequiredParentheses
         }
 
         private void AddDiagnostics(
-            SyntaxNodeAnalysisContext context, TBinaryLikeExpressionSyntax? binaryLikeOpt, int precedence,
+            IDESyntaxNodeAnalysisContext context, TBinaryLikeExpressionSyntax? binaryLikeOpt, int precedence,
             ReportDiagnostic severity, ImmutableArray<Location> additionalLocations,
             string equivalenceKey, bool includeInFixAll)
         {

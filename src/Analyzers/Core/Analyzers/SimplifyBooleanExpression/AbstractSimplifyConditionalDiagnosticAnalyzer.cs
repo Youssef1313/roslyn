@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.SimplifyBooleanExpression
         TSyntaxKind,
         TExpressionSyntax,
         TConditionalExpressionSyntax> :
-        AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TExpressionSyntax : SyntaxNode
         where TConditionalExpressionSyntax : TExpressionSyntax
@@ -54,14 +54,14 @@ namespace Microsoft.CodeAnalysis.SimplifyBooleanExpression
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
         {
             var syntaxKinds = SyntaxFacts.SyntaxKinds;
             context.RegisterSyntaxNodeAction(
                 AnalyzeConditionalExpression, syntaxKinds.Convert<TSyntaxKind>(syntaxKinds.ConditionalExpression));
         }
 
-        private void AnalyzeConditionalExpression(SyntaxNodeAnalysisContext context)
+        private void AnalyzeConditionalExpression(IDESyntaxNodeAnalysisContext context)
         {
             var styleOption = context.GetAnalyzerOptions().PreferSimplifiedBooleanExpressions;
             if (!styleOption.Value)

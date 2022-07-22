@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseThrowExpression
         {
         }
 
-        protected override CodeStyleOption2<bool> PreferThrowExpressionStyle(OperationAnalysisContext context)
+        protected override CodeStyleOption2<bool> PreferThrowExpressionStyle(IDEOperationAnalysisContext context)
             => context.GetCSharpAnalyzerOptions().PreferThrowExpression;
 
         protected override bool IsSupported(Compilation compilation)

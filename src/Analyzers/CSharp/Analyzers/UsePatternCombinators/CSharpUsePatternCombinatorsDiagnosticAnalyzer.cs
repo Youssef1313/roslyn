@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternCombinators
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed class CSharpUsePatternCombinatorsDiagnosticAnalyzer :
-        AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private const string SafeKey = "safe";
 
@@ -43,13 +43,13 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternCombinators
         public static bool IsSafe(Diagnostic diagnostic)
             => diagnostic.Properties.ContainsKey(SafeKey);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeNode,
                 SyntaxKind.LogicalAndExpression,
                 SyntaxKind.LogicalOrExpression,
                 SyntaxKind.LogicalNotExpression);
 
-        private void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        private void AnalyzeNode(IDESyntaxNodeAnalysisContext context)
         {
             var expression = (ExpressionSyntax)context.Node;
             if (expression.GetDiagnostics().Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))

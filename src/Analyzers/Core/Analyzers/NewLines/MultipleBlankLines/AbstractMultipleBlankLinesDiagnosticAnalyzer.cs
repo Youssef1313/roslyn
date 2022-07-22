@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.NewLines.MultipleBlankLines
 {
-    internal abstract class AbstractMultipleBlankLinesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract class AbstractMultipleBlankLinesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private readonly ISyntaxFacts _syntaxFacts;
 
@@ -29,10 +29,10 @@ namespace Microsoft.CodeAnalysis.NewLines.MultipleBlankLines
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeTree);
 
-        private void AnalyzeTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = context.GetAnalyzerOptions().AllowMultipleBlankLines;
             if (option.Value)
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.NewLines.MultipleBlankLines
         }
 
         private void Recurse(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             ReportDiagnostic severity,
             SyntaxNode node,
             CancellationToken cancellationToken)
@@ -65,7 +65,7 @@ namespace Microsoft.CodeAnalysis.NewLines.MultipleBlankLines
             }
         }
 
-        private void CheckToken(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxToken token)
+        private void CheckToken(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxToken token)
         {
             if (token.ContainsDiagnostics)
                 return;

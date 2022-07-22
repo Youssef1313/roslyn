@@ -21,7 +21,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseIsNotExpression
     ''' </summary>
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Partial Friend Class VisualBasicUseIsNotExpressionDiagnosticAnalyzer
-        Inherits AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        Inherits AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
 
         Public Sub New()
             MyBase.New(IDEDiagnosticIds.UseIsNotExpressionDiagnosticId,
@@ -35,11 +35,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseIsNotExpression
             Return DiagnosticAnalyzerCategory.SemanticSpanAnalysis
         End Function
 
-        Protected Overrides Sub InitializeWorker(context As AnalysisContext)
+        Protected Overrides Sub InitializeWorker(context As IDEAnalysisContext)
             context.RegisterSyntaxNodeAction(AddressOf SyntaxNodeAction, SyntaxKind.NotExpression)
         End Sub
 
-        Private Sub SyntaxNodeAction(syntaxContext As SyntaxNodeAnalysisContext)
+        Private Sub SyntaxNodeAction(syntaxContext As IDESyntaxNodeAnalysisContext)
             Dim node = syntaxContext.Node
             Dim syntaxTree = node.SyntaxTree
 

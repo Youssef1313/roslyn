@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.AddBraces
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed class CSharpAddBracesDiagnosticAnalyzer :
-        AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpAddBracesDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.AddBracesDiagnosticId,
@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.AddBraces
         {
         }
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeNode,
                 SyntaxKind.IfStatement,
                 SyntaxKind.ElseClause,
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.AddBraces
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        public void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        public void AnalyzeNode(IDESyntaxNodeAnalysisContext context)
         {
             var statement = context.Node;
 

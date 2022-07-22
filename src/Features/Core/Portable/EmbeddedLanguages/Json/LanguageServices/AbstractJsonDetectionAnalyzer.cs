@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Features.EmbeddedLanguages.Json.LanguageService
     /// Analyzer that helps find strings that are likely to be JSON and which we should offer the
     /// enable language service features for.
     /// </summary>
-    internal abstract class AbstractJsonDetectionAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract class AbstractJsonDetectionAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public const string DiagnosticId = "JSON002";
         public const string StrictKey = nameof(StrictKey);
@@ -41,10 +41,10 @@ namespace Microsoft.CodeAnalysis.Features.EmbeddedLanguages.Json.LanguageService
         public override bool OpenFileOnly(SimplifierOptions? options)
             => false;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSemanticModelAction(Analyze);
 
-        public void Analyze(SemanticModelAnalysisContext context)
+        public void Analyze(IDESemanticModelAnalysisContext context)
         {
             var semanticModel = context.SemanticModel;
             var syntaxTree = semanticModel.SyntaxTree;
@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Features.EmbeddedLanguages.Json.LanguageService
         }
 
         private void Analyze(
-            SemanticModelAnalysisContext context,
+            IDESemanticModelAnalysisContext context,
             JsonLanguageDetector detector,
             SyntaxNode node,
             CancellationToken cancellationToken)

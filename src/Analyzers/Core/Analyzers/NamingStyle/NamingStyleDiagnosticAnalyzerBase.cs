@@ -25,7 +25,6 @@ namespace Microsoft.CodeAnalysis.Diagnostics.Analyzers.NamingStyles
         protected NamingStyleDiagnosticAnalyzerBase()
             : base(IDEDiagnosticIds.NamingRuleId,
                    EnforceOnBuildValues.NamingRule,
-                   option: null,    // No unique option to configure the diagnosticId
                    s_localizableTitleNamingStyle,
                    s_localizableMessageFormat)
         {
@@ -46,10 +45,10 @@ namespace Microsoft.CodeAnalysis.Diagnostics.Analyzers.NamingStyles
 
         protected abstract bool ShouldIgnore(ISymbol symbol);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(CompilationStartAction);
 
-        private void CompilationStartAction(CompilationStartAnalysisContext context)
+        private void CompilationStartAction(IDECompilationStartAnalysisContext context)
         {
             var idToCachedResult = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, string?>>(
                 concurrencyLevel: 2, capacity: 0);
@@ -60,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.Analyzers.NamingStyles
 
             // Local functions
 
-            void SymbolAction(SymbolAnalysisContext symbolContext)
+            void SymbolAction(IDESymbolAnalysisContext symbolContext)
             {
                 var diagnostic = TryGetDiagnostic(
                     symbolContext.Compilation,
@@ -75,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.Analyzers.NamingStyles
                 }
             }
 
-            void SyntaxNodeAction(SyntaxNodeAnalysisContext syntaxContext)
+            void SyntaxNodeAction(IDESyntaxNodeAnalysisContext syntaxContext)
             {
                 var symbol = syntaxContext.SemanticModel.GetDeclaredSymbol(syntaxContext.Node, syntaxContext.CancellationToken);
                 if (symbol == null)

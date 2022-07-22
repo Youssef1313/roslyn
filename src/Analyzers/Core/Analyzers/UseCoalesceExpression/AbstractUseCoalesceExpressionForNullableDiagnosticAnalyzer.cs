@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.UseCoalesceExpression
         TConditionalExpressionSyntax,
         TBinaryExpressionSyntax,
         TMemberAccessExpression,
-        TPrefixUnaryExpressionSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        TPrefixUnaryExpressionSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TExpressionSyntax : SyntaxNode
         where TConditionalExpressionSyntax : TExpressionSyntax
@@ -37,14 +37,14 @@ namespace Microsoft.CodeAnalysis.UseCoalesceExpression
 
         protected abstract ISyntaxFacts GetSyntaxFacts();
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             var syntaxKinds = GetSyntaxFacts().SyntaxKinds;
             context.RegisterSyntaxNodeAction(AnalyzeSyntax,
                 syntaxKinds.Convert<TSyntaxKind>(syntaxKinds.TernaryConditionalExpression));
         }
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var conditionalExpression = (TConditionalExpressionSyntax)context.Node;
 

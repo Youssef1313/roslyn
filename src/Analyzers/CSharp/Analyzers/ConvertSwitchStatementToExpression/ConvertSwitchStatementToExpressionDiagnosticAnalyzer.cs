@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ConvertSwitchStatementToExpression
     using Constants = ConvertSwitchStatementToExpressionConstants;
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed partial class ConvertSwitchStatementToExpressionDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed partial class ConvertSwitchStatementToExpressionDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public ConvertSwitchStatementToExpressionDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.ConvertSwitchStatementToExpressionDiagnosticId,
@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ConvertSwitchStatementToExpression
         {
         }
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(context =>
             {
                 if (context.Compilation.LanguageVersion() < LanguageVersion.CSharp8)
@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ConvertSwitchStatementToExpression
                 context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.SwitchStatement);
             });
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var styleOption = context.GetCSharpAnalyzerOptions().PreferSwitchExpression;
             if (!styleOption.Value)

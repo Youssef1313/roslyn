@@ -10,7 +10,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace Microsoft.CodeAnalysis.VisualBasic.SimplifyObjectCreation
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Friend NotInheritable Class VisualBasicSimplifyObjectCreationDiagnosticAnalyzer
-        Inherits AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        Inherits AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
 
         Public Sub New()
             MyBase.New(
@@ -20,7 +20,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.SimplifyObjectCreation
                 title:=New LocalizableResourceString(NameOf(VisualBasicAnalyzersResources.Object_creation_can_be_simplified), VisualBasicAnalyzersResources.ResourceManager, GetType(VisualBasicAnalyzersResources)))
         End Sub
 
-        Protected Overrides Sub InitializeWorker(context As AnalysisContext)
+        Protected Overrides Sub InitializeWorker(context As IDEAnalysisContext)
             context.RegisterSyntaxNodeAction(AddressOf AnalyzeVariableDeclarator, SyntaxKind.VariableDeclarator)
         End Sub
 
@@ -28,7 +28,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.SimplifyObjectCreation
             Return DiagnosticAnalyzerCategory.SemanticSpanAnalysis
         End Function
 
-        Private Sub AnalyzeVariableDeclarator(context As SyntaxNodeAnalysisContext)
+        Private Sub AnalyzeVariableDeclarator(context As IDESyntaxNodeAnalysisContext)
             ' Finds and reports syntax on the form:
             ' Dim x As SomeType = New SomeType()
             ' which can be simplified to

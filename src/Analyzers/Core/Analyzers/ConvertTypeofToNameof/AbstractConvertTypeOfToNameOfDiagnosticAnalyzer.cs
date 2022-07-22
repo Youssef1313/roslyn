@@ -13,7 +13,6 @@ namespace Microsoft.CodeAnalysis.ConvertTypeOfToNameOf
         protected AbstractConvertTypeOfToNameOfDiagnosticAnalyzer(LocalizableString title)
             : base(diagnosticId: IDEDiagnosticIds.ConvertTypeOfToNameOfDiagnosticId,
                   EnforceOnBuildValues.ConvertTypeOfToNameOf,
-                  option: null,
                   title: title)
         {
         }
@@ -21,14 +20,14 @@ namespace Microsoft.CodeAnalysis.ConvertTypeOfToNameOf
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected abstract bool IsValidTypeofAction(OperationAnalysisContext context);
+        protected abstract bool IsValidTypeofAction(IDEOperationAnalysisContext context);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterOperationAction(AnalyzeAction, OperationKind.TypeOf);
         }
 
-        protected void AnalyzeAction(OperationAnalysisContext context)
+        protected void AnalyzeAction(IDEOperationAnalysisContext context)
         {
             if (!IsValidTypeofAction(context) || !IsValidOperation(context.Operation))
             {

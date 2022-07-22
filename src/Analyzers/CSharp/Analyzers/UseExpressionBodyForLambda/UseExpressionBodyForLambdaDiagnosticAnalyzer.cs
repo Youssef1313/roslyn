@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.CodeAnalysis.CSharp.UseExpressionBodyForLambda
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class UseExpressionBodyForLambdaDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class UseExpressionBodyForLambdaDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private static readonly DiagnosticDescriptor s_useExpressionBodyForLambda = CreateDescriptorWithId(UseExpressionBodyForLambdaHelpers.UseExpressionBodyTitle, UseExpressionBodyForLambdaHelpers.UseExpressionBodyTitle);
         private static readonly DiagnosticDescriptor s_useBlockBodyForLambda = CreateDescriptorWithId(UseExpressionBodyForLambdaHelpers.UseBlockBodyTitle, UseExpressionBodyForLambdaHelpers.UseBlockBodyTitle);
@@ -30,11 +30,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UseExpressionBodyForLambda
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeIfEnabled,
                 SyntaxKind.SimpleLambdaExpression, SyntaxKind.ParenthesizedLambdaExpression);
 
-        private static void AnalyzeIfEnabled(SyntaxNodeAnalysisContext context)
+        private static void AnalyzeIfEnabled(IDESyntaxNodeAnalysisContext context)
         {
             var analyzerOptions = context.Options;
             var syntaxTree = context.SemanticModel.SyntaxTree;
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseExpressionBodyForLambda
             AnalyzeSyntax(context, optionValue);
         }
 
-        private static void AnalyzeSyntax(SyntaxNodeAnalysisContext context, CodeStyleOption2<ExpressionBodyPreference> option)
+        private static void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context, CodeStyleOption2<ExpressionBodyPreference> option)
         {
             var declaration = (LambdaExpressionSyntax)context.Node;
             var diagnostic = AnalyzeSyntax(context.SemanticModel, option, declaration, context.CancellationToken);

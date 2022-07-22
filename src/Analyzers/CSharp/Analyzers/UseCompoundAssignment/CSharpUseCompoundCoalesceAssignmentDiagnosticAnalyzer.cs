@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseCompoundAssignment
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal class CSharpUseCompoundCoalesceAssignmentDiagnosticAnalyzer
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpUseCompoundCoalesceAssignmentDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseCoalesceCompoundAssignmentDiagnosticId,
@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseCompoundAssignment
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -50,7 +50,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseCompoundAssignment
             });
         }
 
-        private void AnalyzeCoalesceExpression(SyntaxNodeAnalysisContext context)
+        private void AnalyzeCoalesceExpression(IDESyntaxNodeAnalysisContext context)
         {
             var cancellationToken = context.CancellationToken;
             var semanticModel = context.SemanticModel;
@@ -115,7 +115,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseCompoundAssignment
             return whenTrue != null && assignment != null;
         }
 
-        private void AnalyzeIfStatement(SyntaxNodeAnalysisContext context)
+        private void AnalyzeIfStatement(IDESyntaxNodeAnalysisContext context)
         {
             var cancellationToken = context.CancellationToken;
             var semanticModel = context.SemanticModel;

@@ -123,36 +123,14 @@ internal static partial class AnalyzerOptionsProviders
         => (options is WorkspaceAnalyzerOptions workspaceOptions) ? workspaceOptions.IdeOptions : IdeAnalyzerOptions.CommonDefault;
 #endif
 
+#if CODE_STYLE
     public static AnalyzerOptionsProvider GetAnalyzerOptions(this AnalyzerOptions analyzerOptions, SyntaxTree syntaxTree)
         => new(analyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree), analyzerOptions);
 
-    public static AnalyzerOptionsProvider GetAnalyzerOptions(this SemanticModelAnalysisContext context)
-        => new(context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.SemanticModel.SyntaxTree), context.Options);
-
-    public static AnalyzerOptionsProvider GetAnalyzerOptions(this SyntaxNodeAnalysisContext context)
-        => new(context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree), context.Options);
-
-    public static AnalyzerOptionsProvider GetAnalyzerOptions(this SyntaxTreeAnalysisContext context)
+    public static AnalyzerOptionsProvider GetAnalyzerOptions(this IAnalysisContextWithTree context)
         => new(context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Tree), context.Options);
 
-    public static AnalyzerOptionsProvider GetAnalyzerOptions(this OperationAnalysisContext context)
-        => new(context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Operation.Syntax.SyntaxTree), context.Options);
-
-    public static AnalyzerOptionsProvider GetAnalyzerOptions(this CodeBlockAnalysisContext context)
-        => new(context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.CodeBlock.SyntaxTree), context.Options);
-
-    public static IdeAnalyzerOptions GetIdeAnalyzerOptions(this SemanticModelAnalysisContext context)
+    public static IdeAnalyzerOptions GetIdeAnalyzerOptions(this IAnalysisContext context)
         => context.Options.GetIdeOptions();
-
-    public static IdeAnalyzerOptions GetIdeAnalyzerOptions(this SyntaxNodeAnalysisContext context)
-        => context.Options.GetIdeOptions();
-
-    public static IdeAnalyzerOptions GetIdeAnalyzerOptions(this SyntaxTreeAnalysisContext context)
-        => context.Options.GetIdeOptions();
-
-    public static IdeAnalyzerOptions GetIdeAnalyzerOptions(this OperationAnalysisContext context)
-        => context.Options.GetIdeOptions();
-
-    public static IdeAnalyzerOptions GetIdeAnalyzerOptions(this CodeBlockAnalysisContext context)
-        => context.Options.GetIdeOptions();
+#endif
 }

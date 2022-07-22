@@ -17,7 +17,7 @@ using Roslyn.Utilities;
 namespace Microsoft.CodeAnalysis.Analyzers.MatchFolderAndNamespace
 {
     internal abstract class AbstractMatchFolderAndNamespaceDiagnosticAnalyzer<TSyntaxKind, TNamespaceSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TNamespaceSyntax : SyntaxNode
     {
@@ -43,13 +43,13 @@ namespace Microsoft.CodeAnalysis.Analyzers.MatchFolderAndNamespace
         protected abstract ISyntaxFacts GetSyntaxFacts();
         protected abstract ImmutableArray<TSyntaxKind> GetSyntaxKindsToAnalyze();
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeNamespaceNode, GetSyntaxKindsToAnalyze());
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        private void AnalyzeNamespaceNode(SyntaxNodeAnalysisContext context)
+        private void AnalyzeNamespaceNode(IDESyntaxNodeAnalysisContext context)
         {
             var option = context.GetAnalyzerOptions().PreferNamespaceAndFolderMatchStructure;
             if (!option.Value)

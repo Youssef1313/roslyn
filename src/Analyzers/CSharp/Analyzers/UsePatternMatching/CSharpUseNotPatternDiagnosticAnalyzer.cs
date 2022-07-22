@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
     ///     
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal partial class CSharpUseNotPatternDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal partial class CSharpUseNotPatternDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpUseNotPatternDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseNotPatternDiagnosticId,
@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -51,7 +51,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UsePatternMatching
             });
         }
 
-        private void SyntaxNodeAction(SyntaxNodeAnalysisContext syntaxContext)
+        private void SyntaxNodeAction(IDESyntaxNodeAnalysisContext syntaxContext)
         {
             // Bail immediately if the user has disabled this feature.
             var styleOption = syntaxContext.GetCSharpAnalyzerOptions().PreferNotPattern;

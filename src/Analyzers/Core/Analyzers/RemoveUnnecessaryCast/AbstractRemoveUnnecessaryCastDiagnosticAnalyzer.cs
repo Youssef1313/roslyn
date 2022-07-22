@@ -13,15 +13,13 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryCast
 {
     internal abstract class AbstractRemoveUnnecessaryCastDiagnosticAnalyzer<
         TLanguageKindEnum,
-        TCastExpression> : AbstractBuiltInUnnecessaryCodeStyleDiagnosticAnalyzer
+        TCastExpression> : AbstractBuiltInCodeStyleDiagnosticAnalyzer
         where TLanguageKindEnum : struct
         where TCastExpression : SyntaxNode
     {
         protected AbstractRemoveUnnecessaryCastDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.RemoveUnnecessaryCastDiagnosticId,
                    EnforceOnBuildValues.RemoveUnnecessaryCast,
-                   option: null,
-                   fadingOption: null,
                    new LocalizableResourceString(nameof(AnalyzersResources.Remove_Unnecessary_Cast), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)),
                    new LocalizableResourceString(nameof(CompilerExtensionsResources.Cast_is_redundant), CompilerExtensionsResources.ResourceManager, typeof(CompilerExtensionsResources)))
         {
@@ -34,10 +32,10 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryCast
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKindsOfInterest);
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var diagnostic = TryRemoveCastExpression(
                 context.SemanticModel,

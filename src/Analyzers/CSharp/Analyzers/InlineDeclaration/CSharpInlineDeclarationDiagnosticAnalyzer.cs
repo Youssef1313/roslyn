@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InlineDeclaration
     /// 
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class CSharpInlineDeclarationDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class CSharpInlineDeclarationDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private const string CS0165 = nameof(CS0165); // Use of unassigned local variable 's'
 
@@ -46,7 +46,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InlineDeclaration
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(compilationContext =>
             {
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.CSharp.InlineDeclaration
             });
         }
 
-        private void AnalyzeSyntaxNode(SyntaxNodeAnalysisContext context, INamedTypeSymbol? expressionType)
+        private void AnalyzeSyntaxNode(IDESyntaxNodeAnalysisContext context, INamedTypeSymbol? expressionType)
         {
             var syntaxTree = context.Node.SyntaxTree;
             var csOptions = (CSharpParseOptions)syntaxTree.Options;

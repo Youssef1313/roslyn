@@ -21,13 +21,11 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryNullableDirective
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed class CSharpRemoveUnnecessaryNullableDirectiveDiagnosticAnalyzer
-        : AbstractBuiltInUnnecessaryCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
     {
         public CSharpRemoveUnnecessaryNullableDirectiveDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.RemoveUnnecessaryNullableDirectiveDiagnosticId,
                    EnforceOnBuildValues.RemoveUnnecessaryNullableDirective,
-                   option: null,
-                   fadingOption: null,
                    new LocalizableResourceString(nameof(CSharpAnalyzersResources.Remove_unnecessary_nullable_directive), CSharpAnalyzersResources.ResourceManager, typeof(CSharpAnalyzersResources)),
                    new LocalizableResourceString(nameof(CSharpAnalyzersResources.Nullable_directive_is_unnecessary), CSharpAnalyzersResources.ResourceManager, typeof(CSharpAnalyzersResources)))
         {
@@ -36,12 +34,12 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryNullableDirective
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticDocumentAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(AnalyzeCompilation);
         }
 
-        private void AnalyzeCompilation(CompilationStartAnalysisContext context)
+        private void AnalyzeCompilation(IDECompilationStartAnalysisContext context)
         {
             var analyzer = new AnalyzerImpl(this);
             context.RegisterCodeBlockAction(analyzer.AnalyzeCodeBlock);
@@ -80,14 +78,14 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryNullableDirective
                 && (oldOptionsValue & newOptionsValue) == newOptionsValue;
         }
 
-        private static ImmutableArray<TextSpan> AnalyzeCodeBlock(CodeBlockAnalysisContext context, int positionOfFirstReducingNullableDirective)
+        private static ImmutableArray<TextSpan> AnalyzeCodeBlock(IDECodeBlockAnalysisContext context, int positionOfFirstReducingNullableDirective)
         {
             using var simplifier = new NullableImpactingSpanWalker(context.SemanticModel, positionOfFirstReducingNullableDirective, ignoredSpans: null, context.CancellationToken);
             simplifier.Visit(context.CodeBlock);
             return simplifier.Spans;
         }
 
-        private ImmutableArray<Diagnostic> AnalyzeSemanticModel(SemanticModelAnalysisContext context, int positionOfFirstReducingNullableDirective, SimpleIntervalTree<TextSpan, TextSpanIntervalIntrospector>? codeBlockIntervalTree, SimpleIntervalTree<TextSpan, TextSpanIntervalIntrospector>? possibleNullableImpactIntervalTree)
+        private ImmutableArray<Diagnostic> AnalyzeSemanticModel(IDESemanticModelAnalysisContext context, int positionOfFirstReducingNullableDirective, SimpleIntervalTree<TextSpan, TextSpanIntervalIntrospector>? codeBlockIntervalTree, SimpleIntervalTree<TextSpan, TextSpanIntervalIntrospector>? possibleNullableImpactIntervalTree)
         {
             var root = context.SemanticModel.SyntaxTree.GetCompilationUnitRoot(context.CancellationToken);
 
@@ -268,7 +266,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryNullableDirective
             public AnalyzerImpl(CSharpRemoveUnnecessaryNullableDirectiveDiagnosticAnalyzer analyzer)
                 => _analyzer = analyzer;
 
-            public void AnalyzeCodeBlock(CodeBlockAnalysisContext context)
+            public void AnalyzeCodeBlock(IDECodeBlockAnalysisContext context)
             {
                 if (IsIgnoredCodeBlock(context.CodeBlock))
                     return;
@@ -283,7 +281,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryNullableDirective
                 syntaxTreeState.TryReportNullableImpactingSpans(context.CodeBlock.FullSpan, nullableImpactingSpans);
             }
 
-            public void AnalyzeSemanticModel(SemanticModelAnalysisContext context)
+            public void AnalyzeSemanticModel(IDESemanticModelAnalysisContext context)
             {
                 // Get the state information for the syntax tree. If the state information is not available, it is
                 // initialized directly to a completed state, ensuring that concurrent (or future) calls to

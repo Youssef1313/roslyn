@@ -16,7 +16,7 @@ using Microsoft.CodeAnalysis.Options;
 namespace Microsoft.CodeAnalysis.CSharp.MisplacedUsingDirectives
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class MisplacedUsingDirectivesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class MisplacedUsingDirectivesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private static readonly LocalizableResourceString s_localizableTitle = new(
            nameof(CSharpAnalyzersResources.Misplaced_using_directive), CSharpAnalyzersResources.ResourceManager, typeof(CSharpAnalyzersResources));
@@ -47,13 +47,13 @@ namespace Microsoft.CodeAnalysis.CSharp.MisplacedUsingDirectives
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticDocumentAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterSyntaxNodeAction(AnalyzeNamespaceNode, SyntaxKind.NamespaceDeclaration, SyntaxKind.FileScopedNamespaceDeclaration);
             context.RegisterSyntaxNodeAction(AnalyzeCompilationUnitNode, SyntaxKind.CompilationUnit);
         }
 
-        private void AnalyzeNamespaceNode(SyntaxNodeAnalysisContext context)
+        private void AnalyzeNamespaceNode(IDESyntaxNodeAnalysisContext context)
         {
             var option = context.GetCSharpAnalyzerOptions().UsingDirectivePlacement;
             if (option.Value != AddImportPlacement.OutsideNamespace)
@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.CSharp.MisplacedUsingDirectives
             ReportDiagnostics(context, s_outsideDiagnosticDescriptor, namespaceDeclaration.Usings, option);
         }
 
-        private static void AnalyzeCompilationUnitNode(SyntaxNodeAnalysisContext context)
+        private static void AnalyzeCompilationUnitNode(IDESyntaxNodeAnalysisContext context)
         {
             var option = context.GetCSharpAnalyzerOptions().UsingDirectivePlacement;
             var compilationUnit = (CompilationUnitSyntax)context.Node;
@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.CSharp.MisplacedUsingDirectives
         }
 
         private static void ReportDiagnostics(
-           SyntaxNodeAnalysisContext context, DiagnosticDescriptor descriptor,
+           IDESyntaxNodeAnalysisContext context, DiagnosticDescriptor descriptor,
            IEnumerable<UsingDirectiveSyntax> usingDirectives, CodeStyleOption2<AddImportPlacement> option)
         {
             foreach (var usingDirective in usingDirectives)

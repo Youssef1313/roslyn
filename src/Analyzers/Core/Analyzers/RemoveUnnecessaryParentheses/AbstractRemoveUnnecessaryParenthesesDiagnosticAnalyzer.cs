@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryParentheses
     internal abstract class AbstractRemoveUnnecessaryParenthesesDiagnosticAnalyzer<
         TLanguageKindEnum,
         TParenthesizedExpressionSyntax>
-        : AbstractBuiltInUnnecessaryCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TLanguageKindEnum : struct
         where TParenthesizedExpressionSyntax : SyntaxNode
     {
@@ -25,7 +25,6 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryParentheses
             : base(IDEDiagnosticIds.RemoveUnnecessaryParenthesesDiagnosticId,
                   EnforceOnBuildValues.RemoveUnnecessaryParentheses,
                   options: ParenthesesDiagnosticAnalyzersHelper.Options,
-                  fadingOption: null,
                   new LocalizableResourceString(nameof(AnalyzersResources.Remove_unnecessary_parentheses), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)),
                   new LocalizableResourceString(nameof(AnalyzersResources.Parentheses_can_be_removed), AnalyzersResources.ResourceManager, typeof(AnalyzersResources)))
         {
@@ -37,14 +36,14 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryParentheses
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeSyntax, GetSyntaxKind());
 
         protected abstract bool CanRemoveParentheses(
             TParenthesizedExpressionSyntax parenthesizedExpression, SemanticModel semanticModel, CancellationToken cancellationToken,
             out PrecedenceKind precedence, out bool clarifiesPrecedence);
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var cancellationToken = context.CancellationToken;
             var parenthesizedExpression = (TParenthesizedExpressionSyntax)context.Node;

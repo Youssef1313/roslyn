@@ -18,14 +18,14 @@ namespace Microsoft.CodeAnalysis.CSharp.AddAccessibilityModifiers
         : AbstractAddAccessibilityModifiersDiagnosticAnalyzer<CompilationUnitSyntax>
     {
         protected override void ProcessCompilationUnit(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             CodeStyleOption2<AccessibilityModifiersRequired> option, CompilationUnitSyntax compilationUnit)
         {
             ProcessMembers(context, option, compilationUnit.Members);
         }
 
         private void ProcessMembers(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             CodeStyleOption2<AccessibilityModifiersRequired> option,
             SyntaxList<MemberDeclarationSyntax> members)
         {
@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.CSharp.AddAccessibilityModifiers
         }
 
         private void ProcessMemberDeclaration(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             CodeStyleOption2<AccessibilityModifiersRequired> option, MemberDeclarationSyntax member)
         {
             if (member is BaseNamespaceDeclarationSyntax namespaceDeclaration)

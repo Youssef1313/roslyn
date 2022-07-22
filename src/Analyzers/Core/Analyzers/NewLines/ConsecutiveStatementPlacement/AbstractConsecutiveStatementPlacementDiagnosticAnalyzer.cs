@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.LanguageServices;
 namespace Microsoft.CodeAnalysis.NewLines.ConsecutiveStatementPlacement
 {
     internal abstract class AbstractConsecutiveStatementPlacementDiagnosticAnalyzer<TExecutableStatementSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TExecutableStatementSyntax : SyntaxNode
     {
         private readonly ISyntaxFacts _syntaxFacts;
@@ -33,10 +33,10 @@ namespace Microsoft.CodeAnalysis.NewLines.ConsecutiveStatementPlacement
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeSyntaxTree);
 
-        private void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeSyntaxTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = context.GetAnalyzerOptions().AllowStatementImmediatelyAfterBlock;
             if (option.Value)
@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.NewLines.ConsecutiveStatementPlacement
             Recurse(context, option.Notification.Severity, root, cancellationToken);
         }
 
-        private void Recurse(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode node, CancellationToken cancellationToken)
+        private void Recurse(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode node, CancellationToken cancellationToken)
         {
             if (node.ContainsDiagnostics && node.GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error))
                 return;
@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.NewLines.ConsecutiveStatementPlacement
             }
         }
 
-        private void ProcessBlockLikeStatement(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode block)
+        private void ProcessBlockLikeStatement(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode block)
         {
             // Don't examine broken blocks.
             var endToken = block.GetLastToken();

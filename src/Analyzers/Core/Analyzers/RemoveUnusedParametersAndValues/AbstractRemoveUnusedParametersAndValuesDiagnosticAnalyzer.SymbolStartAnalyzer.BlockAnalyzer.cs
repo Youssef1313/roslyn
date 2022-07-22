@@ -17,7 +17,7 @@ using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
 {
-    internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private sealed partial class SymbolStartAnalyzer
         {
@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                     _referencedParameters = new ConcurrentDictionary<IParameterSymbol, bool>();
                 }
 
-                public static void Analyze(OperationBlockStartAnalysisContext context, SymbolStartAnalyzer symbolStartAnalyzer)
+                public static void Analyze(IDEOperationBlockStartAnalysisContext context, SymbolStartAnalyzer symbolStartAnalyzer)
                 {
                     if (HasSyntaxErrors() || context.OperationBlocks.IsEmpty)
                     {
@@ -195,7 +195,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                             : value;
                 }
 
-                private void AnalyzeExpressionStatement(OperationAnalysisContext context)
+                private void AnalyzeExpressionStatement(IDEOperationAnalysisContext context)
                 {
                     if (_options.UnusedValueExpressionStatementSeverity == ReportDiagnostic.Suppress)
                     {
@@ -256,7 +256,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                     context.ReportDiagnostic(diagnostic);
                 }
 
-                private void AnalyzeDelegateCreationOrAnonymousFunction(OperationAnalysisContext operationAnalysisContext)
+                private void AnalyzeDelegateCreationOrAnonymousFunction(IDEOperationAnalysisContext operationAnalysisContext)
                 {
                     _hasDelegateCreationOrAnonymousFunction = true;
                     if (!_hasDelegateEscape)
@@ -265,7 +265,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                     }
                 }
 
-                private void AnalyzeLocalOrParameterReference(OperationAnalysisContext operationAnalysisContext)
+                private void AnalyzeLocalOrParameterReference(IDEOperationAnalysisContext operationAnalysisContext)
                 {
                     if (operationAnalysisContext.Operation is IParameterReferenceOperation parameterReference)
                     {
@@ -395,7 +395,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                 }
 
                 /// <summary>
-                /// Method invoked in <see cref="AnalyzeOperationBlockEnd(OperationBlockAnalysisContext)"/>
+                /// Method invoked in <see cref="AnalyzeOperationBlockEnd(IDEOperationBlockAnalysisContext)"/>
                 /// for each operation block to determine if we should analyze the operation block or bail out.
                 /// </summary>
                 private bool ShouldAnalyze(IOperation operationBlock, ISymbol owningSymbol, ref bool hasOperationNoneDescendant)
@@ -484,7 +484,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                     return true;
                 }
 
-                private void AnalyzeOperationBlockEnd(OperationBlockAnalysisContext context)
+                private void AnalyzeOperationBlockEnd(IDEOperationBlockAnalysisContext context)
                 {
                     // Bail out if we are neither computing unused parameters nor unused value assignments.
                     var isComputingUnusedParams = _options.IsComputingUnusedParams(context.OwningSymbol);
@@ -510,7 +510,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                 }
 
                 private void AnalyzeUnusedValueAssignments(
-                    OperationBlockAnalysisContext context,
+                    IDEOperationBlockAnalysisContext context,
                     bool isComputingUnusedParams,
                     PooledHashSet<SymbolUsageResult> symbolUsageResultsBuilder,
                     out bool hasBlockWithAllUsedSymbolWrites,
@@ -725,7 +725,7 @@ namespace Microsoft.CodeAnalysis.RemoveUnusedParametersAndValues
                 }
 
                 private void AnalyzeUnusedParameters(
-                    OperationBlockAnalysisContext context,
+                    IDEOperationBlockAnalysisContext context,
                     bool isComputingUnusedParams,
                     PooledHashSet<SymbolUsageResult> symbolUsageResultsBuilder,
                     bool hasBlockWithAllUsedSymbolWrites,

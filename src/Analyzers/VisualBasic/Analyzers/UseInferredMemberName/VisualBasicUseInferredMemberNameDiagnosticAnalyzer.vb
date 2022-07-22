@@ -19,12 +19,12 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseInferredMemberName
     Friend Class VisualBasicUseInferredMemberNameDiagnosticAnalyzer
         Inherits AbstractUseInferredMemberNameDiagnosticAnalyzer
 
-        Protected Overrides Sub InitializeWorker(context As AnalysisContext)
-            context.RegisterSyntaxNodeAction(Sub(c As SyntaxNodeAnalysisContext) AnalyzeSyntax(c),
+        Protected Overrides Sub InitializeWorker(context As IDEAnalysisContext)
+            context.RegisterSyntaxNodeAction(Sub(c As IDESyntaxNodeAnalysisContext) AnalyzeSyntax(c),
                 SyntaxKind.NameColonEquals, SyntaxKind.NamedFieldInitializer)
         End Sub
 
-        Protected Overrides Sub AnalyzeSyntax(context As SyntaxNodeAnalysisContext)
+        Protected Overrides Sub AnalyzeSyntax(context As IDESyntaxNodeAnalysisContext)
             Select Case context.Node.Kind()
                 Case SyntaxKind.NameColonEquals
                     ReportDiagnosticsIfNeeded(DirectCast(context.Node, NameColonEqualsSyntax), context)
@@ -35,7 +35,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseInferredMemberName
             End Select
         End Sub
 
-        Private Sub ReportDiagnosticsIfNeeded(nameColonEquals As NameColonEqualsSyntax, context As SyntaxNodeAnalysisContext)
+        Private Sub ReportDiagnosticsIfNeeded(nameColonEquals As NameColonEqualsSyntax, context As IDESyntaxNodeAnalysisContext)
 
             If Not nameColonEquals.IsParentKind(SyntaxKind.SimpleArgument) Then
                 Return
@@ -59,7 +59,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseInferredMemberName
                     additionalUnnecessaryLocations:=ImmutableArray.Create(syntaxTree.GetLocation(fadeSpan))))
         End Sub
 
-        Private Sub ReportDiagnosticsIfNeeded(fieldInitializer As NamedFieldInitializerSyntax, context As SyntaxNodeAnalysisContext)
+        Private Sub ReportDiagnosticsIfNeeded(fieldInitializer As NamedFieldInitializerSyntax, context As IDESyntaxNodeAnalysisContext)
             If Not fieldInitializer.Parent.Parent.IsKind(SyntaxKind.AnonymousObjectCreationExpression) Then
                 Return
             End If

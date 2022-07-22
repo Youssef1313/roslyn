@@ -24,11 +24,11 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseAutoProperty
             Return True
         End Function
 
-        Protected Overrides Sub AnalyzeCompilationUnit(context As SemanticModelAnalysisContext, root As SyntaxNode, analysisResults As List(Of AnalysisResult))
+        Protected Overrides Sub AnalyzeCompilationUnit(context As IDESemanticModelAnalysisContext, root As SyntaxNode, analysisResults As List(Of AnalysisResult))
             AnalyzeMembers(context, DirectCast(root, CompilationUnitSyntax).Members, analysisResults)
         End Sub
 
-        Private Sub AnalyzeMembers(context As SemanticModelAnalysisContext,
+        Private Sub AnalyzeMembers(context As IDESemanticModelAnalysisContext,
                                    members As SyntaxList(Of StatementSyntax),
                                    analysisResults As List(Of AnalysisResult))
             For Each member In members
@@ -36,7 +36,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.UseAutoProperty
             Next
         End Sub
 
-        Private Sub AnalyzeMember(context As SemanticModelAnalysisContext,
+        Private Sub AnalyzeMember(context As IDESemanticModelAnalysisContext,
                                   member As StatementSyntax,
                                   analysisResults As List(Of AnalysisResult))
 

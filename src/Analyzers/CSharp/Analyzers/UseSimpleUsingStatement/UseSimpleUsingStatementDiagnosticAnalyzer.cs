@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseSimpleUsingStatement
     ///    semantics will not change.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class UseSimpleUsingStatementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class UseSimpleUsingStatementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public UseSimpleUsingStatementDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseSimpleUsingStatementDiagnosticId,
@@ -61,10 +61,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UseSimpleUsingStatement
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.UsingStatement);
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var outermostUsing = (UsingStatementSyntax)context.Node;
 

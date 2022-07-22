@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.UseNullPropagation
         TConditionalAccessExpressionSyntax,
         TElementAccessExpressionSyntax,
         TIfStatementSyntax,
-        TExpressionStatementSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        TExpressionStatementSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct
         where TExpressionSyntax : SyntaxNode
         where TStatementSyntax : SyntaxNode
@@ -72,7 +72,7 @@ namespace Microsoft.CodeAnalysis.UseNullPropagation
             ISyntaxFacts syntaxFacts, TExpressionSyntax conditionNode,
             [NotNullWhen(true)] out TExpressionSyntax? conditionPartToCheck, out bool isEquals);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -98,7 +98,7 @@ namespace Microsoft.CodeAnalysis.UseNullPropagation
         }
 
         private void AnalyzeTernaryConditionalExpression(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             INamedTypeSymbol? expressionType,
             IMethodSymbol? referenceEqualsMethod)
         {
@@ -183,7 +183,7 @@ namespace Microsoft.CodeAnalysis.UseNullPropagation
         }
 
         private bool TryAnalyzeCondition(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             ISyntaxFacts syntaxFacts,
             IMethodSymbol? referenceEqualsMethod,
             TExpressionSyntax condition,
@@ -238,7 +238,7 @@ namespace Microsoft.CodeAnalysis.UseNullPropagation
         }
 
         private static bool TryAnalyzeInvocationCondition(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             ISyntaxFacts syntaxFacts,
             IMethodSymbol? referenceEqualsMethod,
             TInvocationExpressionSyntax invocation,

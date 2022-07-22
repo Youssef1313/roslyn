@@ -78,7 +78,7 @@ namespace Microsoft.CodeAnalysis.ValidateFormatString
 
                 var syntaxKinds = GetSyntaxFacts().SyntaxKinds;
                 startContext.RegisterSyntaxNodeAction(
-                    c => AnalyzeNode(c, formatProviderType),
+                    c => AnalyzeNode(new(c), formatProviderType),
                     syntaxKinds.Convert<TSyntaxKind>(syntaxKinds.InvocationExpression));
             });
         }
@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.ValidateFormatString
         [PerformanceSensitive(
             "https://github.com/dotnet/roslyn/issues/23583",
             Constraint = "Reading editorconfig options is expensive and should be avoided if a syntax-based fast path exists.")]
-        private void AnalyzeNode(SyntaxNodeAnalysisContext context, INamedTypeSymbol formatProviderType)
+        private void AnalyzeNode(IDESyntaxNodeAnalysisContext context, INamedTypeSymbol formatProviderType)
         {
             var syntaxFacts = GetSyntaxFacts();
             var expression = syntaxFacts.GetExpressionOfInvocationExpression(context.Node);
@@ -329,7 +329,7 @@ namespace Microsoft.CodeAnalysis.ValidateFormatString
         }
 
         protected static void ValidateAndReportDiagnostic(
-            SyntaxNodeAnalysisContext context,
+            IDESyntaxNodeAnalysisContext context,
             int numberOfPlaceholderArguments,
             string formatString,
             int formatStringPosition)

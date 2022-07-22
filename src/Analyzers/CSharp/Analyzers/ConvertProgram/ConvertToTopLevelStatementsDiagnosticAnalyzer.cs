@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.CSharp.TopLevelStatements
     using static ConvertProgramAnalysis;
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class ConvertToTopLevelStatementsDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class ConvertToTopLevelStatementsDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public ConvertToTopLevelStatementsDiagnosticAnalyzer()
             : base(
@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.CSharp.TopLevelStatements
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticDocumentAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.CSharp.TopLevelStatements
             });
         }
 
-        private void ProcessCompilationUnit(SyntaxNodeAnalysisContext context)
+        private void ProcessCompilationUnit(IDESyntaxNodeAnalysisContext context)
         {
             // Don't want to suggest moving if the user doesn't have a preference for top-level-statements.
             var option = context.GetCSharpAnalyzerOptions().PreferTopLevelStatements;

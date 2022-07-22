@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.OrderModifiers
 {
-    internal abstract class AbstractOrderModifiersDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract class AbstractOrderModifiersDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         private readonly ISyntaxFacts _syntaxFacts;
         private readonly AbstractOrderModifiersHelpers _helpers;
@@ -33,12 +33,12 @@ namespace Microsoft.CodeAnalysis.OrderModifiers
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeSyntaxTree);
 
-        protected abstract CodeStyleOption2<string> GetPreferredOrderStyle(SyntaxTreeAnalysisContext context);
+        protected abstract CodeStyleOption2<string> GetPreferredOrderStyle(IDESyntaxTreeAnalysisContext context);
 
-        private void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeSyntaxTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = GetPreferredOrderStyle(context);
             if (!_helpers.TryGetOrComputePreferredOrder(option.Value, out var preferredOrder))
@@ -51,13 +51,13 @@ namespace Microsoft.CodeAnalysis.OrderModifiers
         }
 
         protected abstract void Recurse(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             Dictionary<int, int> preferredOrder,
             ReportDiagnostic severity,
             SyntaxNode root);
 
         protected void CheckModifiers(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             Dictionary<int, int> preferredOrder,
             ReportDiagnostic severity,
             SyntaxNode memberDeclaration)

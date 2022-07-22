@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.CodeAnalysis.UseExplicitTupleName
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    internal class UseExplicitTupleNameDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class UseExplicitTupleNameDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public const string ElementName = nameof(ElementName);
 
@@ -27,10 +27,10 @@ namespace Microsoft.CodeAnalysis.UseExplicitTupleName
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterOperationAction(AnalyzeOperation, OperationKind.FieldReference);
 
-        private void AnalyzeOperation(OperationAnalysisContext context)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context)
         {
             // We only create a diagnostic if the option's value is set to true.
             var option = context.GetAnalyzerOptions().PreferExplicitTupleNames;

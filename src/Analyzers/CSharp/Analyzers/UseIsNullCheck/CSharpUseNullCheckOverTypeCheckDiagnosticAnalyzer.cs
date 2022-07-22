@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Shared.Extensions;
 namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class CSharpUseNullCheckOverTypeCheckDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class CSharpUseNullCheckOverTypeCheckDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpUseNullCheckOverTypeCheckDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseNullCheckOverTypeCheckDiagnosticId,
@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
             });
         }
 
-        private static bool ShouldAnalyze(OperationAnalysisContext context, out ReportDiagnostic severity)
+        private static bool ShouldAnalyze(IDEOperationAnalysisContext context, out ReportDiagnostic severity)
         {
             var option = context.GetCSharpAnalyzerOptions().PreferNullCheckOverTypeCheck;
             if (!option.Value)
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
             return true;
         }
 
-        private void AnalyzeNegatedPatternOperation(OperationAnalysisContext context)
+        private void AnalyzeNegatedPatternOperation(IDEOperationAnalysisContext context)
         {
             if (!ShouldAnalyze(context, out var severity) ||
                 context.Operation.Syntax is not UnaryPatternSyntax)
@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseIsNullCheck
             }
         }
 
-        private void AnalyzeIsTypeOperation(OperationAnalysisContext context, INamedTypeSymbol? expressionType)
+        private void AnalyzeIsTypeOperation(IDEOperationAnalysisContext context, INamedTypeSymbol? expressionType)
         {
             var operation = context.Operation;
             var syntax = operation.Syntax;

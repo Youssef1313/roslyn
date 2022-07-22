@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.CSharp.SimplifyPropertyPattern
     ///     <c>x is { a.b: ... }</c>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class CSharpSimplifyPropertyPatternDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class CSharpSimplifyPropertyPatternDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpSimplifyPropertyPatternDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.SimplifyPropertyPatternDiagnosticId,
@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.CSharp.SimplifyPropertyPattern
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(compilationContext =>
             {
@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.CSharp.SimplifyPropertyPattern
             });
         }
 
-        private void AnalyzeSubpattern(SyntaxNodeAnalysisContext syntaxContext)
+        private void AnalyzeSubpattern(IDESyntaxNodeAnalysisContext syntaxContext)
         {
             // Bail immediately if the user has disabled this feature.
             var styleOption = syntaxContext.GetCSharpAnalyzerOptions().PreferExtendedPropertyPattern;

@@ -14,7 +14,7 @@ using Roslyn.Utilities;
 namespace Microsoft.CodeAnalysis.CSharp.RemoveUnreachableCode
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class CSharpRemoveUnreachableCodeDiagnosticAnalyzer : AbstractBuiltInUnnecessaryCodeStyleDiagnosticAnalyzer
+    internal class CSharpRemoveUnreachableCodeDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
     {
         private const string CS0162 = nameof(CS0162); // Unreachable code detected
 
@@ -24,8 +24,6 @@ namespace Microsoft.CodeAnalysis.CSharp.RemoveUnreachableCode
         public CSharpRemoveUnreachableCodeDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.RemoveUnreachableCodeDiagnosticId,
                    EnforceOnBuildValues.RemoveUnreachableCode,
-                   option: null,
-                   fadingOption: FadingOptions.FadeOutUnreachableCode,
                    new LocalizableResourceString(nameof(CSharpAnalyzersResources.Unreachable_code_detected), CSharpAnalyzersResources.ResourceManager, typeof(CSharpAnalyzersResources)),
                    configurable: false)
         {
@@ -34,10 +32,10 @@ namespace Microsoft.CodeAnalysis.CSharp.RemoveUnreachableCode
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSemanticModelAction(AnalyzeSemanticModel);
 
-        private void AnalyzeSemanticModel(SemanticModelAnalysisContext context)
+        private void AnalyzeSemanticModel(IDESemanticModelAnalysisContext context)
         {
             var semanticModel = context.SemanticModel;
             var cancellationToken = context.CancellationToken;
@@ -67,7 +65,7 @@ namespace Microsoft.CodeAnalysis.CSharp.RemoveUnreachableCode
         }
 
         private void ProcessUnreachableDiagnostic(
-            SemanticModelAnalysisContext context, SyntaxNode root, TextSpan sourceSpan)
+            IDESemanticModelAnalysisContext context, SyntaxNode root, TextSpan sourceSpan)
         {
             var node = root.FindNode(sourceSpan);
 

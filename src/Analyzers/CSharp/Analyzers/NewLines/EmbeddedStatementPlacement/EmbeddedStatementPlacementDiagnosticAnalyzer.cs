@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.CodeAnalysis.CSharp.NewLines.EmbeddedStatementPlacement
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal sealed class EmbeddedStatementPlacementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal sealed class EmbeddedStatementPlacementDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public EmbeddedStatementPlacementDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.EmbeddedStatementPlacementDiagnosticId,
@@ -28,10 +28,10 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.EmbeddedStatementPlacement
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SyntaxTreeWithoutSemanticsAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxTreeAction(AnalyzeTree);
 
-        private void AnalyzeTree(SyntaxTreeAnalysisContext context)
+        private void AnalyzeTree(IDESyntaxTreeAnalysisContext context)
         {
             var option = context.GetCSharpAnalyzerOptions().AllowEmbeddedStatementsOnSameLine;
             if (option.Value)
@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.EmbeddedStatementPlacement
             Recurse(context, option.Notification.Severity, context.Tree.GetRoot(context.CancellationToken));
         }
 
-        private void Recurse(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode node)
+        private void Recurse(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, SyntaxNode node)
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.EmbeddedStatementPlacement
             }
         }
 
-        private bool CheckStatementSyntax(SyntaxTreeAnalysisContext context, ReportDiagnostic severity, StatementSyntax statement)
+        private bool CheckStatementSyntax(IDESyntaxTreeAnalysisContext context, ReportDiagnostic severity, StatementSyntax statement)
         {
             if (!StatementNeedsWrapping(statement))
                 return false;

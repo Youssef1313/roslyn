@@ -23,11 +23,11 @@ namespace Microsoft.CodeAnalysis.CSharp.OrderModifiers
         {
         }
 
-        protected override CodeStyleOption2<string> GetPreferredOrderStyle(SyntaxTreeAnalysisContext context)
+        protected override CodeStyleOption2<string> GetPreferredOrderStyle(IDESyntaxTreeAnalysisContext context)
             => context.GetCSharpAnalyzerOptions().PreferredModifierOrder;
 
         protected override void Recurse(
-            SyntaxTreeAnalysisContext context,
+            IDESyntaxTreeAnalysisContext context,
             Dictionary<int, int> preferredOrder,
             ReportDiagnostic severity,
             SyntaxNode root)

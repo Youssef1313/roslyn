@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.CodeStyle
 {
     internal static class FormattingAnalyzerHelper
     {
-        internal static void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context, FormattingProvider formattingProvider, DiagnosticDescriptor descriptor, SyntaxFormattingOptions options)
+        internal static void AnalyzeSyntaxTree(IDESyntaxTreeAnalysisContext context, FormattingProvider formattingProvider, DiagnosticDescriptor descriptor, SyntaxFormattingOptions options)
         {
             var tree = context.Tree;
             var cancellationToken = context.CancellationToken;

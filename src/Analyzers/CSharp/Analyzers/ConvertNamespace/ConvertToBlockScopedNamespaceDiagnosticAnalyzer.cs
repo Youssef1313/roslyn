@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.CodeAnalysis.CSharp.ConvertNamespace
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class ConvertToBlockScopedNamespaceDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class ConvertToBlockScopedNamespaceDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public ConvertToBlockScopedNamespaceDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseBlockScopedNamespaceDiagnosticId,
@@ -26,10 +26,10 @@ namespace Microsoft.CodeAnalysis.CSharp.ConvertNamespace
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeNamespace, SyntaxKind.FileScopedNamespaceDeclaration);
 
-        private void AnalyzeNamespace(SyntaxNodeAnalysisContext context)
+        private void AnalyzeNamespace(IDESyntaxNodeAnalysisContext context)
         {
             var namespaceDeclaration = (FileScopedNamespaceDeclarationSyntax)context.Node;
 

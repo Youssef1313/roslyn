@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.ForEachCast
         public const string IsFixable = nameof(IsFixable);
     }
 
-    internal abstract class AbstractForEachCastDiagnosticAnalyzer<TSyntaxKind, TForEachStatementSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal abstract class AbstractForEachCastDiagnosticAnalyzer<TSyntaxKind, TForEachStatementSyntax> : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TSyntaxKind : struct, Enum
         where TForEachStatementSyntax : SyntaxNode
     {
@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.ForEachCast
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(context =>
             {
@@ -56,7 +56,7 @@ namespace Microsoft.CodeAnalysis.ForEachCast
         }
 
         protected void AnalyzeSyntax(
-            SyntaxNodeAnalysisContext context, INamedTypeSymbol ienumerableType, INamedTypeSymbol ienumerableOfTType)
+            IDESyntaxNodeAnalysisContext context, INamedTypeSymbol ienumerableType, INamedTypeSymbol ienumerableOfTType)
         {
             var semanticModel = context.SemanticModel;
             var cancellationToken = context.CancellationToken;

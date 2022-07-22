@@ -17,7 +17,7 @@ using Microsoft.CodeAnalysis.Simplification;
 namespace Microsoft.CodeAnalysis.CSharp.UseImplicitObjectCreation
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class CSharpUseImplicitObjectCreationDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class CSharpUseImplicitObjectCreationDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public CSharpUseImplicitObjectCreationDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseImplicitObjectCreationDiagnosticId,
@@ -31,10 +31,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UseImplicitObjectCreation
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.ObjectCreationExpression);
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context)
         {
             var syntaxTree = context.Node.SyntaxTree;
 

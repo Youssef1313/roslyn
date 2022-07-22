@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.UseIsNullCheck
 {
     internal abstract class AbstractUseIsNullCheckForReferenceEqualsDiagnosticAnalyzer<
         TLanguageKindEnum>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TLanguageKindEnum : struct
     {
         protected AbstractUseIsNullCheckForReferenceEqualsDiagnosticAnalyzer(LocalizableString title)
@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.UseIsNullCheck
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterCompilationStartAction(context =>
             {
                 var objectType = context.Compilation.GetSpecialType(SpecialType.System_Object);
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.UseIsNullCheck
         protected abstract bool IsUnconstrainedGenericSupported(Compilation compilation);
         protected abstract ISyntaxFacts GetSyntaxFacts();
 
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context, IMethodSymbol referenceEqualsMethod, bool unconstraintedGenericSupported)
+        private void AnalyzeSyntax(IDESyntaxNodeAnalysisContext context, IMethodSymbol referenceEqualsMethod, bool unconstraintedGenericSupported)
         {
             var cancellationToken = context.CancellationToken;
 

@@ -24,7 +24,7 @@ internal abstract partial class AbstractUseNullPropagationDiagnosticAnalyzer<
         TIfStatementSyntax ifStatement, [NotNullWhen(true)] out TExpressionSyntax? condition, [NotNullWhen(true)] out TStatementSyntax? trueStatement);
 
     private void AnalyzeIfStatement(
-        SyntaxNodeAnalysisContext context,
+        IDESyntaxNodeAnalysisContext context,
         IMethodSymbol? referenceEqualsMethod)
     {
         var cancellationToken = context.CancellationToken;

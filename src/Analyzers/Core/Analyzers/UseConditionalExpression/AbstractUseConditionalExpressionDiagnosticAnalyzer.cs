@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.UseConditionalExpression
 {
     internal abstract class AbstractUseConditionalExpressionDiagnosticAnalyzer<
         TIfStatementSyntax>
-        : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TIfStatementSyntax : SyntaxNode
     {
         public sealed override DiagnosticAnalyzerCategory GetAnalyzerCategory()
@@ -34,12 +34,12 @@ namespace Microsoft.CodeAnalysis.UseConditionalExpression
 
         protected abstract ISyntaxFacts GetSyntaxFacts();
         protected abstract bool TryMatchPattern(IConditionalOperation ifOperation, ISymbol containingSymbol);
-        protected abstract CodeStyleOption2<bool> GetStylePreference(OperationAnalysisContext context);
+        protected abstract CodeStyleOption2<bool> GetStylePreference(IDEOperationAnalysisContext context);
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterOperationAction(AnalyzeOperation, OperationKind.Conditional);
 
-        private void AnalyzeOperation(OperationAnalysisContext context)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context)
         {
             var ifOperation = (IConditionalOperation)context.Operation;
             if (ifOperation.Syntax is not TIfStatementSyntax ifStatement)

@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ConvertTypeOfToNameOf
         {
         }
 
-        protected override bool IsValidTypeofAction(OperationAnalysisContext context)
+        protected override bool IsValidTypeofAction(IDEOperationAnalysisContext context)
         {
             var node = context.Operation.Syntax;
 

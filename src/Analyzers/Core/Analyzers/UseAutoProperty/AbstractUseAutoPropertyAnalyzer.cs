@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.UseAutoProperty
         TPropertyDeclaration,
         TFieldDeclaration,
         TVariableDeclarator,
-        TExpression> : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        TExpression> : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
         where TPropertyDeclaration : SyntaxNode
         where TFieldDeclaration : SyntaxNode
         where TVariableDeclarator : SyntaxNode
@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.UseAutoProperty
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory() => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected abstract void AnalyzeCompilationUnit(SemanticModelAnalysisContext context, SyntaxNode root, List<AnalysisResult> analysisResults);
+        protected abstract void AnalyzeCompilationUnit(IDESemanticModelAnalysisContext context, SyntaxNode root, List<AnalysisResult> analysisResults);
         protected abstract bool SupportsReadOnlyProperties(Compilation compilation);
         protected abstract bool SupportsPropertyInitializer(Compilation compilation);
         protected abstract bool CanExplicitInterfaceImplementationsBeFixed();
@@ -46,10 +46,10 @@ namespace Microsoft.CodeAnalysis.UseAutoProperty
             List<AnalysisResult> analysisResults, HashSet<IFieldSymbol> ineligibleFields,
             Compilation compilation, CancellationToken cancellationToken);
 
-        protected sealed override void InitializeWorker(AnalysisContext context)
+        protected sealed override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSemanticModelAction(AnalyzeSemanticModel);
 
-        private void AnalyzeSemanticModel(SemanticModelAnalysisContext context)
+        private void AnalyzeSemanticModel(IDESemanticModelAnalysisContext context)
         {
             var cancellationToken = context.CancellationToken;
             var semanticModel = context.SemanticModel;
@@ -74,7 +74,7 @@ namespace Microsoft.CodeAnalysis.UseAutoProperty
         }
 
         protected void AnalyzeProperty(
-            SemanticModelAnalysisContext context, TPropertyDeclaration propertyDeclaration, List<AnalysisResult> analysisResults)
+            IDESemanticModelAnalysisContext context, TPropertyDeclaration propertyDeclaration, List<AnalysisResult> analysisResults)
         {
             var cancellationToken = context.CancellationToken;
             var semanticModel = context.SemanticModel;
@@ -283,7 +283,7 @@ namespace Microsoft.CodeAnalysis.UseAutoProperty
         private void Process(
             List<AnalysisResult> analysisResults,
             HashSet<IFieldSymbol> ineligibleFields,
-            SemanticModelAnalysisContext context)
+            IDESemanticModelAnalysisContext context)
         {
             var ineligibleFieldsSet = new HashSet<IFieldSymbol>(ineligibleFields);
             foreach (var result in analysisResults)
@@ -298,7 +298,7 @@ namespace Microsoft.CodeAnalysis.UseAutoProperty
             }
         }
 
-        private void Process(AnalysisResult result, SemanticModelAnalysisContext context)
+        private void Process(AnalysisResult result, IDESemanticModelAnalysisContext context)
         {
             // Check if there are additional reasons we think this field might be ineligible for 
             // replacing with an auto prop.

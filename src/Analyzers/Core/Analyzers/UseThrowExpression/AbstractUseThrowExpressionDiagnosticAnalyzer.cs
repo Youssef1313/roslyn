@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.UseThrowExpression
     /// expressions as well.
     /// </summary>
     internal abstract class AbstractUseThrowExpressionDiagnosticAnalyzer :
-        AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         protected AbstractUseThrowExpressionDiagnosticAnalyzer(Option2<CodeStyleOption2<bool>> preferThrowExpressionOption)
             : base(IDEDiagnosticIds.UseThrowExpressionDiagnosticId,
@@ -45,14 +45,14 @@ namespace Microsoft.CodeAnalysis.UseThrowExpression
         {
         }
 
-        protected abstract CodeStyleOption2<bool> PreferThrowExpressionStyle(OperationAnalysisContext context);
+        protected abstract CodeStyleOption2<bool> PreferThrowExpressionStyle(IDEOperationAnalysisContext context);
 
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
         protected abstract bool IsSupported(Compilation compilation);
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(startContext =>
             {
@@ -66,7 +66,7 @@ namespace Microsoft.CodeAnalysis.UseThrowExpression
             });
         }
 
-        private void AnalyzeOperation(OperationAnalysisContext context, INamedTypeSymbol? expressionTypeOpt)
+        private void AnalyzeOperation(IDEOperationAnalysisContext context, INamedTypeSymbol? expressionTypeOpt)
         {
             var cancellationToken = context.CancellationToken;
 

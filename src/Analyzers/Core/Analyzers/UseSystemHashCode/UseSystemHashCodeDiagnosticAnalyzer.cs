@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.CodeAnalysis.UseSystemHashCode
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    internal class UseSystemHashCodeDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzer
+    internal class UseSystemHashCodeDiagnosticAnalyzer : AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         public UseSystemHashCodeDiagnosticAnalyzer()
             : base(IDEDiagnosticIds.UseSystemHashCode,
@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.UseSystemHashCode
         public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
             => DiagnosticAnalyzerCategory.SemanticSpanAnalysis;
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
         {
             context.RegisterCompilationStartAction(c =>
             {
@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.UseSystemHashCode
             });
         }
 
-        private void AnalyzeOperationBlock(Analyzer analyzer, OperationBlockAnalysisContext context)
+        private void AnalyzeOperationBlock(Analyzer analyzer, IDEOperationBlockAnalysisContext context)
         {
             if (context.OperationBlocks.Length != 1)
                 return;

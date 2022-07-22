@@ -28,11 +28,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UseAutoProperty
             => false;
 
         protected override void AnalyzeCompilationUnit(
-            SemanticModelAnalysisContext context, SyntaxNode root, List<AnalysisResult> analysisResults)
+            IDESemanticModelAnalysisContext context, SyntaxNode root, List<AnalysisResult> analysisResults)
             => AnalyzeMembers(context, ((CompilationUnitSyntax)root).Members, analysisResults);
 
         private void AnalyzeMembers(
-            SemanticModelAnalysisContext context,
+            IDESemanticModelAnalysisContext context,
             SyntaxList<MemberDeclarationSyntax> members,
             List<AnalysisResult> analysisResults)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UseAutoProperty
         }
 
         private void AnalyzeMemberDeclaration(
-            SemanticModelAnalysisContext context,
+            IDESemanticModelAnalysisContext context,
             MemberDeclarationSyntax member,
             List<AnalysisResult> analysisResults)
         {

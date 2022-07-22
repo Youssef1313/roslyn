@@ -17,7 +17,7 @@ using Roslyn.Utilities;
 namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.TypeStyle
 {
     internal abstract partial class CSharpTypeStyleDiagnosticAnalyzerBase :
-        AbstractBuiltInCodeStyleDiagnosticAnalyzer
+        AbstractBuiltInCodeStyleDiagnosticAnalyzerWithOption
     {
         protected abstract CSharpTypeStyleHelper Helper { get; }
 
@@ -43,11 +43,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Diagnostics.TypeStyle
                      csOptions.VarElsewhere.Notification.Severity is ReportDiagnostic.Warn or ReportDiagnostic.Error);
         }
 
-        protected override void InitializeWorker(AnalysisContext context)
+        protected override void InitializeWorker(IDEAnalysisContext context)
             => context.RegisterSyntaxNodeAction(
                 HandleVariableDeclaration, SyntaxKind.VariableDeclaration, SyntaxKind.ForEachStatement, SyntaxKind.DeclarationExpression);
 
-        private void HandleVariableDeclaration(SyntaxNodeAnalysisContext context)
+        private void HandleVariableDeclaration(IDESyntaxNodeAnalysisContext context)
         {
             var declarationStatement = context.Node;
             var cancellationToken = context.CancellationToken;
