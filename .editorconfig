@@ -249,7 +249,7 @@ csharp_prefer_braces = true:silent
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
-[src/{Analyzers,CodeStyle,Features,Workspaces,EditorFeatures,VisualStudio}/**/*.{cs,vb}]
+[src/{Analyzers,CodeStyle,Features,Workspaces,EditorFeatures,VisualStudio}/**.{cs,vb}]
 
 # IDE0011: Add braces
 csharp_prefer_braces = when_multiline:warning
@@ -295,7 +295,7 @@ dotnet_diagnostic.IDE2003.severity = warning
 # csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental
 dotnet_diagnostic.IDE2004.severity = warning
 
-[src/{VisualStudio}/**/*.{cs,vb}]
+[src/{VisualStudio}/**.{cs,vb}]
 # CA1822: Make member static
 # There is a risk of accidentally breaking an internal API that partners rely on though IVT.
 dotnet_code_quality.CA1822.api_surface = private
