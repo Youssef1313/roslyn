@@ -2,45 +2,55 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.DesignerAttribute;
+using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.SolutionCrawler;
+using StreamJsonRpc;
 
 namespace Microsoft.CodeAnalysis.Remote
 {
     internal sealed class RemoteDesignerAttributeDiscoveryService : BrokeredServiceBase, IRemoteDesignerAttributeDiscoveryService
     {
-        internal sealed class Factory : FactoryBase<IRemoteDesignerAttributeDiscoveryService, IRemoteDesignerAttributeDiscoveryService.ICallback>
+        /// <summary>
+        /// Allow designer attribute computation to continue on on the server, even while the client is processing the
+        /// last batch of results.
+        /// </summary>
+        /// <remarks>
+        /// This value was not determined empirically.
+        /// </remarks>
+        private const int MaxReadAhead = 64;
+
+        internal sealed class Factory : FactoryBase<IRemoteDesignerAttributeDiscoveryService>
         {
-            protected override IRemoteDesignerAttributeDiscoveryService CreateService(in ServiceConstructionArguments arguments, RemoteCallback<IRemoteDesignerAttributeDiscoveryService.ICallback> callback)
-                => new RemoteDesignerAttributeDiscoveryService(arguments, callback);
+            protected override IRemoteDesignerAttributeDiscoveryService CreateService(in ServiceConstructionArguments arguments)
+                => new RemoteDesignerAttributeDiscoveryService(arguments);
         }
 
-        private readonly RemoteCallback<IRemoteDesignerAttributeDiscoveryService.ICallback> _callback;
-
-        public RemoteDesignerAttributeDiscoveryService(in ServiceConstructionArguments arguments, RemoteCallback<IRemoteDesignerAttributeDiscoveryService.ICallback> callback)
+        public RemoteDesignerAttributeDiscoveryService(in ServiceConstructionArguments arguments)
             : base(arguments)
         {
-            _callback = callback;
         }
 
-        public ValueTask StartScanningForDesignerAttributesAsync(RemoteServiceCallbackId callbackId, CancellationToken cancellationToken)
+        public IAsyncEnumerable<DesignerAttributeData> DiscoverDesignerAttributesAsync(
+            Checksum solutionChecksum,
+            ProjectId projectId,
+            DocumentId? priorityDocument,
+            CancellationToken cancellationToken)
         {
-            return RunServiceAsync(cancellationToken =>
-            {
-                var registrationService = GetWorkspace().Services.GetRequiredService<ISolutionCrawlerRegistrationService>();
-                var analyzerProvider = new RemoteDesignerAttributeIncrementalAnalyzerProvider(_callback, callbackId);
-
-                registrationService.AddAnalyzerProvider(
-                    analyzerProvider,
-                    new IncrementalAnalyzerProviderMetadata(
-                        nameof(RemoteDesignerAttributeIncrementalAnalyzerProvider),
-                        highPriorityForActiveFile: false,
-                        workspaceKinds: WorkspaceKind.RemoteWorkspace));
-
-                return default;
-            }, cancellationToken);
+            var stream = StreamWithSolutionAsync(
+                solutionChecksum,
+                (solution, cancellationToken) =>
+                {
+                    var project = solution.GetRequiredProject(projectId);
+                    var service = solution.Services.GetRequiredService<IDesignerAttributeDiscoveryService>();
+                    return service.ProcessProjectAsync(project, priorityDocument, cancellationToken);
+                }, cancellationToken);
+            return stream.WithJsonRpcSettings(new JsonRpcEnumerableSettings { MaxReadAhead = MaxReadAhead });
         }
     }
 }

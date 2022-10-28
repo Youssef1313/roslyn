@@ -3,163 +3,90 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Immutable;
-using System.Linq;
+using System.Collections.Generic;
+using System.Composition;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.ErrorReporting;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Extensions;
-using Microsoft.CodeAnalysis.SolutionCrawler;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.DesignerAttribute
 {
-    internal abstract class AbstractDesignerAttributeIncrementalAnalyzer : IncrementalAnalyzerBase
+    [ExportWorkspaceService(typeof(IDesignerAttributeDiscoveryService)), Shared]
+    internal sealed partial class DesignerAttributeDiscoveryService : IDesignerAttributeDiscoveryService
     {
-        /// <summary>
-        /// Keep track of the last information we reported.  We will avoid notifying the host if we recompute and these
-        /// don't change.
-        /// </summary>
-        private readonly ConcurrentDictionary<DocumentId, (string? category, VersionStamp projectVersion)> _documentToLastReportedInformation =
-            new ConcurrentDictionary<DocumentId, (string? category, VersionStamp projectVersion)>();
-
-        protected AbstractDesignerAttributeIncrementalAnalyzer()
+        [ImportingConstructor]
+        [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
+        public DesignerAttributeDiscoveryService()
         {
         }
 
-        protected abstract ValueTask ReportProjectRemovedAsync(ProjectId projectId, CancellationToken cancellationToken);
-
-        protected abstract ValueTask ReportDesignerAttributeDataAsync(ImmutableArray<DesignerAttributeData> data, CancellationToken cancellationToken);
-
-        public override async Task RemoveProjectAsync(ProjectId projectId, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<DesignerAttributeData> ProcessProjectAsync(
+            Project project,
+            DocumentId? priorityDocumentId,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await ReportProjectRemovedAsync(projectId, cancellationToken).ConfigureAwait(false);
-
-            foreach (var docId in _documentToLastReportedInformation.Keys)
-            {
-                if (projectId == docId.ProjectId)
-                    _documentToLastReportedInformation.TryRemove(docId, out _);
-            }
-        }
-
-        public override Task RemoveDocumentAsync(DocumentId documentId, CancellationToken cancellationToken)
-        {
-            _documentToLastReportedInformation.TryRemove(documentId, out _);
-            return Task.CompletedTask;
-        }
-
-        public override Task AnalyzeProjectAsync(Project project, bool semanticsChanged, InvocationReasons reasons, CancellationToken cancellationToken)
-            => AnalyzeProjectAsync(project, specificDocument: null, cancellationToken);
-
-        public override Task AnalyzeDocumentAsync(Document document, SyntaxNode? body, InvocationReasons reasons, CancellationToken cancellationToken)
-        {
-            // don't need to reanalyze file if just a method body was edited.  That can't
-            // affect designer attributes.
-            if (body != null)
-                return Task.CompletedTask;
-
-            // When we register our analyzer we will get called into for every document to
-            // 'reanalyze' them all.  Ignore those as we would prefer to analyze the project
-            // en-mass.
-            if (reasons.Contains(PredefinedInvocationReasons.Reanalyze))
-                return Task.CompletedTask;
-
-            return AnalyzeProjectAsync(document.Project, document, cancellationToken);
-        }
-
-        private async Task AnalyzeProjectAsync(Project project, Document? specificDocument, CancellationToken cancellationToken)
-        {
+            // Ignore projects that don't support compilation or don't even have the DesignerCategoryAttribute in it.
             if (!project.SupportsCompilation)
-                return;
+                yield break;
 
-            // We need to reanalyze the project whenever it (or any of its dependencies) have
-            // changed.  We need to know about dependencies since if a downstream project adds the
-            // DesignerCategory attribute to a class, that can affect us when we examine the classes
-            // in this project.
-            var projectVersion = await project.GetDependentSemanticVersionAsync(cancellationToken).ConfigureAwait(false);
-
-            // Now get all the values that actually changed and notify VS about them. We don't need
-            // to tell it about the ones that didn't change since that will have no effect on the
-            // user experience.
-            var latestData = await ComputeLatestDataAsync(
-                project, specificDocument, projectVersion, cancellationToken).ConfigureAwait(false);
-
-            var changedData =
-                latestData.Where(d =>
-                {
-                    _documentToLastReportedInformation.TryGetValue(d.document.Id, out var existingInfo);
-                    return existingInfo.category != d.data.Category;
-                }).ToImmutableArray();
-
-            if (!changedData.IsEmpty)
-            {
-                await ReportDesignerAttributeDataAsync(changedData.SelectAsArray(d => d.data), cancellationToken).ConfigureAwait(false);
-            }
-
-            // Now, keep track of what we've reported to the host so we won't report unchanged files in the future.
-            foreach (var (document, info) in latestData)
-                _documentToLastReportedInformation[document.Id] = (info.Category, projectVersion);
-        }
-
-        private async Task<(Document document, DesignerAttributeData data)[]> ComputeLatestDataAsync(
-            Project project, Document? specificDocument, VersionStamp projectVersion, CancellationToken cancellationToken)
-        {
             var compilation = await project.GetRequiredCompilationAsync(cancellationToken).ConfigureAwait(false);
             var designerCategoryType = compilation.DesignerCategoryAttributeType();
+            if (designerCategoryType == null)
+                yield break;
 
-            using var _ = ArrayBuilder<Task<(Document document, DesignerAttributeData data)>>.GetInstance(out var tasks);
+            // If there is a priority doc, then scan that first.
+            var priorityDocument = priorityDocumentId == null ? null : project.GetDocument(priorityDocumentId);
+            if (priorityDocument is { FilePath: not null })
+            {
+                var data = await ComputeDesignerAttributeDataAsync(designerCategoryType, priorityDocument, cancellationToken).ConfigureAwait(false);
+                if (data != null)
+                    yield return data.Value;
+            }
+
+            // now process the rest of the documents.
+            using var _ = ArrayBuilder<Task<DesignerAttributeData?>>.GetInstance(out var tasks);
             foreach (var document in project.Documents)
             {
-                // If we're only analyzing a specific document, then skip the rest.
-                if (specificDocument != null && document != specificDocument)
+                if (document == priorityDocument || document.FilePath is null)
                     continue;
-
-                // If we don't have a path for this document, we cant proceed with it.
-                // We need that path to inform the project system which file we're referring to.
-                if (document.FilePath == null)
-                    continue;
-
-                // If nothing has changed at the top level between the last time we analyzed this document and now, then
-                // no need to analyze again.
-                if (_documentToLastReportedInformation.TryGetValue(document.Id, out var existingInfo) &&
-                    existingInfo.projectVersion == projectVersion)
-                {
-                    continue;
-                }
 
                 tasks.Add(ComputeDesignerAttributeDataAsync(designerCategoryType, document, cancellationToken));
             }
 
-            return await Task.WhenAll(tasks).ConfigureAwait(false);
+            // Convert the tasks into one final stream we can read all the results from.
+            await foreach (var dataOpt in tasks.ToImmutable().StreamAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (dataOpt != null)
+                    yield return dataOpt.Value;
+            }
         }
 
-        private static async Task<(Document document, DesignerAttributeData data)> ComputeDesignerAttributeDataAsync(
+        private static async Task<DesignerAttributeData?> ComputeDesignerAttributeDataAsync(
             INamedTypeSymbol? designerCategoryType, Document document, CancellationToken cancellationToken)
         {
             try
             {
                 Contract.ThrowIfNull(document.FilePath);
 
-                // We either haven't computed the designer info, or our data was out of date.  We need
-                // So recompute here.  Figure out what the current category is, and if that's different
-                // from what we previously stored.
                 var category = await DesignerAttributeHelpers.ComputeDesignerAttributeCategoryAsync(
                     designerCategoryType, document, cancellationToken).ConfigureAwait(false);
 
-                var data = new DesignerAttributeData
-                {
-                    Category = category,
-                    DocumentId = document.Id,
-                    FilePath = document.FilePath,
-                };
+                // If there's no category (the common case) don't return anything.  The host itself will see no results
+                // returned and can handle that case (for example, if a type previously had the attribute but doesn't
+                // any longer).
+                if (category == null)
+                    return null;
 
-                return (document, data);
+                return new DesignerAttributeData(category, document.Id, document.FilePath);
             }
             catch (Exception e) when (FatalError.ReportAndCatchUnlessCanceled(e, cancellationToken))
             {
-                return default;
+                return null;
             }
         }
     }
