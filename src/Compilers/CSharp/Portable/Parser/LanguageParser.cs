@@ -1589,7 +1589,7 @@ tryAgain:
             var name = this.ParseIdentifierToken();
             var typeParameters = this.ParseTypeParameterList();
 
-            var paramList = keyword.Kind == SyntaxKind.RecordKeyword && CurrentToken.Kind == SyntaxKind.OpenParenToken
+            var paramList = keyword.Kind is SyntaxKind.RecordKeyword or SyntaxKind.ClassKeyword or SyntaxKind.StructKeyword && CurrentToken.Kind == SyntaxKind.OpenParenToken
                 ? ParseParenthesizedParameterList() : null;
 
             var baseList = this.ParseBaseList();
@@ -1743,7 +1743,6 @@ tryAgain:
                 switch (keyword.Kind)
                 {
                     case SyntaxKind.ClassKeyword:
-                        RoslynDebug.Assert(paramList is null);
                         RoslynDebug.Assert(openBrace != null);
                         RoslynDebug.Assert(closeBrace != null);
                         return syntaxFactory.ClassDeclaration(
@@ -1752,6 +1751,7 @@ tryAgain:
                             keyword,
                             name,
                             typeParameters,
+                            paramList,
                             baseList,
                             constraintsList,
                             openBrace,
@@ -1760,7 +1760,6 @@ tryAgain:
                             semicolon);
 
                     case SyntaxKind.StructKeyword:
-                        RoslynDebug.Assert(paramList is null);
                         RoslynDebug.Assert(openBrace != null);
                         RoslynDebug.Assert(closeBrace != null);
                         return syntaxFactory.StructDeclaration(
@@ -1769,6 +1768,7 @@ tryAgain:
                             keyword,
                             name,
                             typeParameters,
+                            paramList,
                             baseList,
                             constraintsList,
                             openBrace,
