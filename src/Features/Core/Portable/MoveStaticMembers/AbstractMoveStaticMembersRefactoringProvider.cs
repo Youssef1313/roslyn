@@ -36,10 +36,6 @@ namespace Microsoft.CodeAnalysis.MoveStaticMembers
             }
 
             var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (semanticModel == null)
-            {
-                return;
-            }
 
             var memberNodeSymbolPairs = selectedMemberNodes
                 .SelectAsArray(m => (node: m, symbol: semanticModel.GetRequiredDeclaredSymbol(m, cancellationToken)))
