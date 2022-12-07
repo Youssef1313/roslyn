@@ -1059,7 +1059,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.Collections
         }
 
         [Fact]
-        public static void TrueForAllTests()
+        public void TrueForAllTests()
         {
             Driver<int> intDriver = new Driver<int>();
             Driver<string> stringDriver = new Driver<string>();
@@ -1086,7 +1086,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.Collections
         }
 
         [Fact]
-        public static void TrueForAllTests_Negative()
+        public void TrueForAllTests_Negative()
         {
             Driver<int> intDriver = new Driver<int>();
             Driver<string> stringDriver = new Driver<string>();

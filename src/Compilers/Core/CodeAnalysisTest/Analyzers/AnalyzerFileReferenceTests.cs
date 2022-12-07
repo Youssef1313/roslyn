@@ -613,7 +613,7 @@ public class Generator : ISourceGenerator
             public void Initialize(GeneratorInitializationContext context) => throw new NotImplementedException();
         }
 
-        public class SomeType
+        public static class SomeType
         {
             [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
             public class NestedAnalyzer : DiagnosticAnalyzer
