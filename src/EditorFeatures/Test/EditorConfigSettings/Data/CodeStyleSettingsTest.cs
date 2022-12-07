@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Editor.UnitTests.EditorConfigSettings.Data
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public static void CodeStyleSettingBoolFactory(bool defaultValue)
+        public void CodeStyleSettingBoolFactory(bool defaultValue)
         {
             var option = CreateBoolOption(defaultValue);
             var editorConfigOptions = new TestAnalyzerConfigOptions();
@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Editor.UnitTests.EditorConfigSettings.Data
         [Theory]
         [InlineData(DayOfWeek.Monday)]
         [InlineData(DayOfWeek.Friday)]
-        public static void CodeStyleSettingEnumFactory(DayOfWeek defaultValue)
+        public void CodeStyleSettingEnumFactory(DayOfWeek defaultValue)
         {
             var option = CreateEnumOption(defaultValue);
             var editorConfigOptions = new TestAnalyzerConfigOptions();

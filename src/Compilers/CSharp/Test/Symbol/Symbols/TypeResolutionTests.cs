@@ -99,6 +99,7 @@ namespace System
             Assert.Same(c1TestClassT, c4.GetTypeByMetadataName("System.TestClass`1"));
         }
 
+#pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
         public class C<S, T>
         {
             public class D
@@ -111,6 +112,7 @@ namespace System
                 }
             }
         }
+#pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
 
         [ConditionalFact(typeof(ClrOnly), typeof(DesktopOnly))]
         public void TypeSymbolFromReflectionType()

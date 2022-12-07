@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.EditorConfig.StorageLocation
     public class NamingStylePreferenceEditorConfigStorageLocationTests
     {
         [Fact]
-        public static void TestEmptyDictionaryReturnNoNamingStylePreferencesObjectReturnsFalse()
+        public void TestEmptyDictionaryReturnNoNamingStylePreferencesObjectReturnsFalse()
         {
             var editorConfigStorageLocation = new NamingStylePreferenceEditorConfigStorageLocation();
             var result = editorConfigStorageLocation.TryGetOption(StructuredAnalyzerConfigOptions.Create(DictionaryAnalyzerConfigOptions.EmptyDictionary), typeof(NamingStylePreferences), out _);
@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.EditorConfig.StorageLocation
         }
 
         [Fact]
-        public static void TestNonEmptyDictionaryReturnsTrue()
+        public void TestNonEmptyDictionaryReturnsTrue()
         {
             var editorConfigStorageLocation = new NamingStylePreferenceEditorConfigStorageLocation();
             var options = StructuredAnalyzerConfigOptions.Create(new Dictionary<string, string>()
@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.EditorConfig.StorageLocation
         }
 
         [Fact]
-        public static void TestObjectTypeThrowsInvalidOperationException()
+        public void TestObjectTypeThrowsInvalidOperationException()
         {
             var editorConfigStorageLocation = new NamingStylePreferenceEditorConfigStorageLocation();
             Assert.Throws<InvalidOperationException>(() =>

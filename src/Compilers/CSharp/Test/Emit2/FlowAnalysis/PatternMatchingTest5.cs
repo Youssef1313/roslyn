@@ -13,7 +13,9 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests.FlowAnalysis
 {
+#pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
     public class PatternMatchingTest5
+#pragma warning restore CA1052 // Static holder types should be Static or NotInheritable
     {
         public class FlowAnalysisTests : FlowTestBase
         {
