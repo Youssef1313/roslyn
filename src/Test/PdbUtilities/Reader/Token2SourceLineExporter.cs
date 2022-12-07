@@ -12,7 +12,7 @@ using System.Xml;
 
 namespace Roslyn.Test.PdbUtilities
 {
-    public class Token2SourceLineExporter
+    public static class Token2SourceLineExporter
     {
         // NOTE: this type implementation is essentially an extraction from PdbReader 
         //       located under ndp\clr\src\ToolBox\CCI2\PdbReader folder
