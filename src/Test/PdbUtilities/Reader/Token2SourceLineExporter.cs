@@ -1125,10 +1125,6 @@ namespace Roslyn.Test.PdbUtilities
             //internal byte[] rgl;        // user data, force 4-byte alignment
         };
 
-        private Token2SourceLineExporter()
-        {
-        }
-
         private static readonly XmlWriterSettings s_xmlWriterSettings = new XmlWriterSettings
         {
             Encoding = Encoding.UTF8,
