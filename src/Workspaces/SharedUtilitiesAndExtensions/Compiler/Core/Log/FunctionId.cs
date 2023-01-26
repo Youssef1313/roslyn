@@ -586,5 +586,11 @@ namespace Microsoft.CodeAnalysis.Internal.Log
 
         // 660-670 for semantic model reuse service.
         SemanticModelReuseLanguageService_TryGetSpeculativeSemanticModelAsync_Equivalent = 660,
+
+        // 670-680 for newer rename ids
+        Rename_TryApplyRename_WorkspaceChanged = 670,
+
+        // 680-690 LSP Initialization info ids.
+        LSP_Initialize = 680,
     }
 }
