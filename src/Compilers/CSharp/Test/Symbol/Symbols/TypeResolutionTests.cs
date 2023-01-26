@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
@@ -99,7 +100,7 @@ namespace System
             Assert.Same(c1TestClassT, c4.GetTypeByMetadataName("System.TestClass`1"));
         }
 
-        [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "<Pending>")]
+        [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "Make sure test behavior isn't changed.")]
         public class C<S, T>
         {
             public class D
