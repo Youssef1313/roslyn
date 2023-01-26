@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.Collections
     /// <summary>
     /// Contains tests that ensure the correctness of the List class.
     /// </summary>
-    public class SegmentedList_Generic_Tests_Insert
+    public static class SegmentedList_Generic_Tests_Insert
     {
         internal class Driver<T>
         {
@@ -1059,7 +1059,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.Collections
         }
 
         [Fact]
-        public void TrueForAllTests()
+        public static void TrueForAllTests()
         {
             Driver<int> intDriver = new Driver<int>();
             Driver<string> stringDriver = new Driver<string>();
@@ -1086,7 +1086,7 @@ namespace Microsoft.CodeAnalysis.UnitTests.Collections
         }
 
         [Fact]
-        public void TrueForAllTests_Negative()
+        public static void TrueForAllTests_Negative()
         {
             Driver<int> intDriver = new Driver<int>();
             Driver<string> stringDriver = new Driver<string>();
