@@ -42,6 +42,8 @@ namespace Microsoft.CodeAnalysis
 
         public IncrementalValueProvider<Compilation> CompilationProvider => new IncrementalValueProvider<Compilation>(SharedInputNodes.Compilation.WithRegisterOutput(RegisterOutput).WithTrackingName(WellKnownGeneratorInputs.Compilation));
 
+        public IncrementalValueProvider<(Compilation, ImmutableArray<AdditionalText>)> CompilationWithAdditionalTextsProvider => new IncrementalValueProvider<(Compilation, ImmutableArray<AdditionalText>)>(SharedInputNodes.CompilationWithAdditionalTexts.WithRegisterOutput(RegisterOutput).WithTrackingName(WellKnownGeneratorInputs.CompilationWithAdditionalTextsProvider));
+
         // Use a ReferenceEqualityComparer as we want to rerun this stage whenever the CompilationOptions changes at all
         // (e.g. we don't care if it has the same conceptual value, we're ok rerunning as long as the actual instance
         // changes).

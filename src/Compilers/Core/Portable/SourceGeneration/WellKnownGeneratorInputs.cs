@@ -20,5 +20,7 @@ namespace Microsoft.CodeAnalysis
         public const string AnalyzerConfigOptions = nameof(AnalyzerConfigOptions);
 
         public const string MetadataReferences = nameof(MetadataReferences);
+
+        public const string CompilationWithAdditionalTextsProvider = nameof(CompilationWithAdditionalTextsProvider);
     }
 }
