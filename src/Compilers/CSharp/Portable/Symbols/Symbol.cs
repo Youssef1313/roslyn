@@ -980,14 +980,15 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return false;
             }
 
-            if (info.Severity == DiagnosticSeverity.Error && IsHighestPriorityUseSiteErrorCode(info.Code))
+            Debug.Assert(info.Severity == DiagnosticSeverity.Error);
+            if (IsHighestPriorityUseSiteErrorCode(info.Code))
             {
                 // this error is final, no other error can override it:
                 result = info;
                 return true;
             }
 
-            if (result == null || result.Severity == DiagnosticSeverity.Warning && info.Severity == DiagnosticSeverity.Error)
+            if (result == null || result.Severity == DiagnosticSeverity.Warning)
             {
                 // there could be an error of higher-priority
                 result = info;
@@ -1012,6 +1013,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 result = new UseSiteInfo<AssemblySymbol>(diagnosticInfo);
                 return retVal;
             }
+
+            Debug.Assert(diagnosticInfo is null);
 
             var secondaryDependencies = result.SecondaryDependencies;
             var primaryDependency = result.PrimaryDependency;
@@ -1043,7 +1046,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             diagnostics.Add(info, location);
-            return info.Severity == DiagnosticSeverity.Error;
+            Debug.Assert(info.Severity == DiagnosticSeverity.Error);
+            return true;
         }
 
         internal static bool ReportUseSiteDiagnostic(DiagnosticInfo info, BindingDiagnosticBag diagnostics, Location location)
