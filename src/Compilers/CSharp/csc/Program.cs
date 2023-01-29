@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.CodeAnalysis.CSharp.CommandLine
 {
-    public static class Program
+    public class Program
     {
         public static int Main(string[] args)
         {

@@ -100,7 +100,6 @@ namespace System
             Assert.Same(c1TestClassT, c4.GetTypeByMetadataName("System.TestClass`1"));
         }
 
-        [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "Make sure test behavior isn't changed.")]
         public class C<S, T>
         {
             public class D
