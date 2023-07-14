@@ -330,7 +330,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <param name="nameOpt">Optional method name</param>
         /// <param name="arity">Method arity</param>
         /// <param name="options">Lookup options</param>
-        internal virtual void DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
+        internal virtual bool DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
             var assembly = this.ContainingAssembly;
 
@@ -340,15 +340,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (!assembly.MightContainExtensionMethods)
             {
-                return;
+                return false;
             }
 
             var typesWithExtensionMethods = this.TypesMightContainExtensionMethods;
 
+            var foundExtension = false;
             foreach (var type in typesWithExtensionMethods)
             {
-                type.DoGetExtensionMethods(actionOnExtensionMethods, nameOpt, arity, options);
+                foundExtension |= type.DoGetExtensionMethods(actionOnExtensionMethods, nameOpt, arity, options);
             }
+
+            return foundExtension;
         }
 
         internal string QualifiedName

@@ -84,16 +84,10 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     case SymbolKind.Namespace:
                         {
-                            var hasExtension = false;
-                            // TODO: Avoid capture
-                            ((NamespaceSymbol)nsOrType.NamespaceOrType).DoActionOnExtensionMethods(m =>
-                            {
-                                hasExtension = true;
-                                actionOnExtensionMethods(m);
-                            }, name, arity, options);
+                            var foundExtension = ((NamespaceSymbol)nsOrType.NamespaceOrType).DoActionOnExtensionMethods(actionOnExtensionMethods, name, arity, options);
 
                             // If we found any extension methods, then consider this using as used.
-                            if (hasExtension)
+                            if (foundExtension)
                             {
                                 MarkImportDirective(nsOrType.UsingDirectiveReference, callerIsSemanticModel);
                             }
@@ -103,16 +97,10 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     case SymbolKind.NamedType:
                         {
-                            var hasExtension = false;
-                            // TODO: Avoid capture
-                            ((NamedTypeSymbol)nsOrType.NamespaceOrType).DoActionOnExtensionMethods(m =>
-                            {
-                                hasExtension = true;
-                                actionOnExtensionMethods(m);
-                            }, name, arity, options);
+                            var foundExtension = ((NamedTypeSymbol)nsOrType.NamespaceOrType).DoActionOnExtensionMethods(actionOnExtensionMethods, name, arity, options);
 
                             // If we found any extension methods, then consider this using as used.
-                            if (hasExtension)
+                            if (foundExtension)
                             {
                                 MarkImportDirective(nsOrType.UsingDirectiveReference, callerIsSemanticModel);
                             }

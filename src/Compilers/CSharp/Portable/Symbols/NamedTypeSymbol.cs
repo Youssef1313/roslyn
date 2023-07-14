@@ -339,20 +339,23 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </remarks>
         public abstract bool MightContainExtensionMethods { get; }
 
-        internal void DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
+        internal bool DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
             if (this.MightContainExtensionMethods)
             {
-                DoGetExtensionMethods(actionOnExtensionMethods, nameOpt, arity, options);
+                return DoGetExtensionMethods(actionOnExtensionMethods, nameOpt, arity, options);
             }
+
+            return false;
         }
 
-        internal void DoGetExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
+        internal bool DoGetExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
             var members = nameOpt == null
                 ? this.GetMembersUnordered()
                 : this.GetSimpleNonTypeMembers(nameOpt);
 
+            var foundExtensionMethod = false;
             foreach (var member in members)
             {
                 if (member.Kind == SymbolKind.Method)
@@ -372,9 +375,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                         Debug.Assert(method.MethodKind != MethodKind.ReducedExtension);
                         actionOnExtensionMethods(method);
+                        foundExtensionMethod = true;
                     }
                 }
             }
+
+            return foundExtensionMethod;
         }
 
         // TODO: Probably should provide similar accessors for static constructor, destructor, 

@@ -231,9 +231,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
 
 #nullable disable
 
-        internal override void DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
+        internal override bool DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
-            _underlyingNamespace.DoActionOnExtensionMethods(action, nameOpt, arity, options);
+            return _underlyingNamespace.DoActionOnExtensionMethods(action, nameOpt, arity, options);
 
             // TODO: Avoid capture.
             void action(MethodSymbol m)

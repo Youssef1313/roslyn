@@ -292,12 +292,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override void DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string name, int arity, LookupOptions options)
+        internal override bool DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string name, int arity, LookupOptions options)
         {
+            var foundExtension = false;
             foreach (NamespaceSymbol namespaceSymbol in _namespacesToMerge)
             {
-                namespaceSymbol.DoActionOnExtensionMethods(actionOnExtensionMethods, name, arity, options);
+                foundExtension |= namespaceSymbol.DoActionOnExtensionMethods(actionOnExtensionMethods, name, arity, options);
             }
+
+            return foundExtension;
         }
     }
 }
