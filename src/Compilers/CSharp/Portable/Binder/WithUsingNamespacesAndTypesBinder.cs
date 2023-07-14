@@ -69,21 +69,14 @@ namespace Microsoft.CodeAnalysis.CSharp
             get { return true; }
         }
 
-        internal override void GetCandidateExtensionMethods(
-            ArrayBuilder<MethodSymbol> methods,
+        internal override void DoActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> actionOnExtensionMethods,
             string name,
             int arity,
             LookupOptions options,
             Binder originalBinder)
         {
-            Debug.Assert(methods.Count == 0);
-
             bool callerIsSemanticModel = originalBinder.IsSemanticModelBinder;
-
-            // We need to avoid collecting multiple candidates for an extension method imported both through a namespace and a static class
-            // We will look for duplicates only if both of the following flags are set to true
-            bool seenNamespaceWithExtensionMethods = false;
-            bool seenStaticClassWithExtensionMethods = false;
 
             foreach (var nsOrType in this.GetUsings(basesBeingResolved: null))
             {
@@ -91,14 +84,18 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     case SymbolKind.Namespace:
                         {
-                            var count = methods.Count;
-                            ((NamespaceSymbol)nsOrType.NamespaceOrType).GetExtensionMethods(methods, name, arity, options);
+                            var hasExtension = false;
+                            // TODO: Avoid capture
+                            ((NamespaceSymbol)nsOrType.NamespaceOrType).DoActionOnExtensionMethods(m =>
+                            {
+                                hasExtension = true;
+                                actionOnExtensionMethods(m);
+                            }, name, arity, options);
 
                             // If we found any extension methods, then consider this using as used.
-                            if (methods.Count != count)
+                            if (hasExtension)
                             {
                                 MarkImportDirective(nsOrType.UsingDirectiveReference, callerIsSemanticModel);
-                                seenNamespaceWithExtensionMethods = true;
                             }
 
                             break;
@@ -106,24 +103,23 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                     case SymbolKind.NamedType:
                         {
-                            var count = methods.Count;
-                            ((NamedTypeSymbol)nsOrType.NamespaceOrType).GetExtensionMethods(methods, name, arity, options);
+                            var hasExtension = false;
+                            // TODO: Avoid capture
+                            ((NamedTypeSymbol)nsOrType.NamespaceOrType).DoActionOnExtensionMethods(m =>
+                            {
+                                hasExtension = true;
+                                actionOnExtensionMethods(m);
+                            }, name, arity, options);
 
                             // If we found any extension methods, then consider this using as used.
-                            if (methods.Count != count)
+                            if (hasExtension)
                             {
                                 MarkImportDirective(nsOrType.UsingDirectiveReference, callerIsSemanticModel);
-                                seenStaticClassWithExtensionMethods = true;
                             }
 
                             break;
                         }
                 }
-            }
-
-            if (seenNamespaceWithExtensionMethods && seenStaticClassWithExtensionMethods)
-            {
-                methods.RemoveDuplicates();
             }
         }
 

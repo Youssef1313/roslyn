@@ -46,13 +46,13 @@ static class S2
             var retargetingNamespace = retargetingModule.GlobalNamespace;
 
             var sourceMethods = new ArrayBuilder<MethodSymbol>();
-            sourceNamespace.GetExtensionMethods(sourceMethods, null, 0, LookupOptions.AllMethodsOnArityZero);
+            sourceNamespace.DoActionOnExtensionMethods(sourceMethods.Add, null, 0, LookupOptions.AllMethodsOnArityZero);
             Utils.CheckSymbols(sourceMethods.ToImmutable(),
                 "void S1.E(object x, object y)",
                 "void S2.E<T, U>(T t, U u)");
 
             var retargetingMethods = new ArrayBuilder<MethodSymbol>();
-            retargetingNamespace.GetExtensionMethods(retargetingMethods, null, 0, LookupOptions.AllMethodsOnArityZero);
+            retargetingNamespace.DoActionOnExtensionMethods(retargetingMethods.Add, null, 0, LookupOptions.AllMethodsOnArityZero);
             Utils.CheckSymbols(retargetingMethods.ToImmutable(),
                 "void S1.E(object x, object y)",
                 "void S2.E<T, U>(T t, U u)");
@@ -63,13 +63,13 @@ static class S2
             }
 
             sourceMethods = new ArrayBuilder<MethodSymbol>();
-            sourceNamespace.GetExtensionMethods(sourceMethods, "E", 2, LookupOptions.Default);
+            sourceNamespace.DoActionOnExtensionMethods(sourceMethods.Add, "E", 2, LookupOptions.Default);
             Utils.CheckSymbols(sourceMethods.ToImmutable(),
                 "void S2.E<T, U>(T t, U u)");
             var sourceMethod = sourceMethods[0];
 
             retargetingMethods = new ArrayBuilder<MethodSymbol>();
-            retargetingNamespace.GetExtensionMethods(retargetingMethods, "E", 2, LookupOptions.Default);
+            retargetingNamespace.DoActionOnExtensionMethods(retargetingMethods.Add, "E", 2, LookupOptions.Default);
             Utils.CheckSymbols(retargetingMethods.ToImmutable(),
                 "void S2.E<T, U>(T t, U u)");
             var retargetingMethod = retargetingMethods[0];

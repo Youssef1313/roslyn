@@ -4,6 +4,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -461,7 +462,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             var methods = ArrayBuilder<MethodSymbol>.GetInstance();
             var binder = scope.Binder;
-            binder.GetCandidateExtensionMethods(methods, name, arity, options, this);
+            // TODO: Avoid capture.
+            binder.DoActionOnCandidateExtensionMethods(method => methods.Add(method), name, arity, options, this);
 
             foreach (var method in methods)
             {
@@ -750,8 +752,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// responsible for walking the nested binding scopes from innermost to outermost. This method is overridden
         /// to search the available members list in binding types that represent types, namespaces, and usings.
         /// </summary>
-        internal virtual void GetCandidateExtensionMethods(
-            ArrayBuilder<MethodSymbol> methods,
+        internal virtual void DoActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> actionOnExtensionMethods,
             string name,
             int arity,
             LookupOptions options,

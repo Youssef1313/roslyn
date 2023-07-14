@@ -4625,15 +4625,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                 binder = binder.WithAdditionalFlags(BinderFlags.SemanticModel);
                 foreach (var scope in new ExtensionMethodScopes(binder))
                 {
-                    var extensionMethods = ArrayBuilder<MethodSymbol>.GetInstance();
                     var otherBinder = scope.Binder;
-                    otherBinder.GetCandidateExtensionMethods(extensionMethods,
-                                                             name,
-                                                             arity,
-                                                             options,
-                                                             originalBinder: binder);
-
-                    foreach (var method in extensionMethods)
+                    // TODO: Avoid capture
+                    otherBinder.DoActionOnCandidateExtensionMethods(method =>
                     {
                         var discardedUseSiteInfo = CompoundUseSiteInfo<AssemblySymbol>.Discarded;
                         MergeReducedAndFilteredMethodGroupSymbol(
@@ -4644,9 +4638,11 @@ namespace Microsoft.CodeAnalysis.CSharp
                             receiver.Type,
                             ref resultKind,
                             binder.Compilation);
-                    }
-
-                    extensionMethods.Free();
+                    },
+                                                             name,
+                                                             arity,
+                                                             options,
+                                                             originalBinder: binder);
                 }
             }
 

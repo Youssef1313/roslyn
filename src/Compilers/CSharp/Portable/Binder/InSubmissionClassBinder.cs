@@ -31,8 +31,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             _inUsings = inUsings;
         }
 
-        internal override void GetCandidateExtensionMethods(
-            ArrayBuilder<MethodSymbol> methods,
+        internal override void DoActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> actionOnExtensionMethods,
             string name,
             int arity,
             LookupOptions options,
@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             for (var submission = this.Compilation; submission != null; submission = submission.PreviousSubmission)
             {
-                submission.ScriptClass?.GetExtensionMethods(methods, name, arity, options);
+                submission.ScriptClass?.DoActionOnExtensionMethods(actionOnExtensionMethods, name, arity, options);
             }
         }
 

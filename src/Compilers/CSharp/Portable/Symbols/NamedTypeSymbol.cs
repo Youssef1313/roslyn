@@ -339,15 +339,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </remarks>
         public abstract bool MightContainExtensionMethods { get; }
 
-        internal void GetExtensionMethods(ArrayBuilder<MethodSymbol> methods, string nameOpt, int arity, LookupOptions options)
+        internal void DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
             if (this.MightContainExtensionMethods)
             {
-                DoGetExtensionMethods(methods, nameOpt, arity, options);
+                DoGetExtensionMethods(actionOnExtensionMethods, nameOpt, arity, options);
             }
         }
 
-        internal void DoGetExtensionMethods(ArrayBuilder<MethodSymbol> methods, string nameOpt, int arity, LookupOptions options)
+        internal void DoGetExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
             var members = nameOpt == null
                 ? this.GetMembersUnordered()
@@ -371,7 +371,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         }
 
                         Debug.Assert(method.MethodKind != MethodKind.ReducedExtension);
-                        methods.Add(method);
+                        actionOnExtensionMethods(method);
                     }
                 }
             }

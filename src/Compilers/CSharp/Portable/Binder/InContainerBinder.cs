@@ -72,8 +72,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             get { return true; }
         }
 
-        internal override void GetCandidateExtensionMethods(
-            ArrayBuilder<MethodSymbol> methods,
+        internal override void DoActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> actionOnExtensionMethods,
             string name,
             int arity,
             LookupOptions options,
@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             if (_container.Kind == SymbolKind.Namespace)
             {
-                ((NamespaceSymbol)_container).GetExtensionMethods(methods, name, arity, options);
+                ((NamespaceSymbol)_container).DoActionOnExtensionMethods(actionOnExtensionMethods, name, arity, options);
             }
         }
 

@@ -231,15 +231,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
 
 #nullable disable
 
-        internal override void GetExtensionMethods(ArrayBuilder<MethodSymbol> methods, string nameOpt, int arity, LookupOptions options)
+        internal override void DoActionOnExtensionMethods(Action<MethodSymbol> actionOnExtensionMethods, string nameOpt, int arity, LookupOptions options)
         {
-            var underlyingMethods = ArrayBuilder<MethodSymbol>.GetInstance();
-            _underlyingNamespace.GetExtensionMethods(underlyingMethods, nameOpt, arity, options);
-            foreach (var underlyingMethod in underlyingMethods)
+            _underlyingNamespace.DoActionOnExtensionMethods(action, nameOpt, arity, options);
+
+            // TODO: Avoid capture.
+            void action(MethodSymbol m)
             {
-                methods.Add(this.RetargetingTranslator.Retarget(underlyingMethod));
+                actionOnExtensionMethods(this.RetargetingTranslator.Retarget(m));
             }
-            underlyingMethods.Free();
         }
 
         internal sealed override CSharpCompilation DeclaringCompilation // perf, not correctness
