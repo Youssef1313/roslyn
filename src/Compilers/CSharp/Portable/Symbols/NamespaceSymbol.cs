@@ -351,6 +351,27 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+        internal virtual void PerformActionOnExtensionMethods(Action<MethodSymbol> action, string nameOpt, int arity, LookupOptions options)
+        {
+            var assembly = this.ContainingAssembly;
+
+            // Only MergedAssemblySymbol should have a null ContainingAssembly
+            // and MergedAssemblySymbol overrides GetExtensionMethods.
+            Debug.Assert((object)assembly != null);
+
+            if (!assembly.MightContainExtensionMethods)
+            {
+                return;
+            }
+
+            var typesWithExtensionMethods = this.TypesMightContainExtensionMethods;
+
+            foreach (var type in typesWithExtensionMethods)
+            {
+                type.PerformActionOnExtensionMethods(action, nameOpt, arity, options);
+            }
+        }
+
         internal string QualifiedName
         {
             get

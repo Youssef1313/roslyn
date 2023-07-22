@@ -4,6 +4,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -459,17 +460,14 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         private void LookupExtensionMethodsInSingleBinder(ExtensionMethodScope scope, LookupResult result, string name, int arity, LookupOptions options, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
         {
-            var methods = ArrayBuilder<MethodSymbol>.GetInstance();
             var binder = scope.Binder;
-            binder.GetCandidateExtensionMethods(methods, name, arity, options, this);
-
-            foreach (var method in methods)
+            binder.PerformActionOnCandidateExtensionMethods(m =>
             {
-                SingleLookupResult resultOfThisMember = this.CheckViability(method, arity, options, null, diagnose: true, useSiteInfo: ref useSiteInfo);
+                // TODO: useSiteInfo?
+                var useSiteInfo = CompoundUseSiteInfo<AssemblySymbol>.Discarded;
+                SingleLookupResult resultOfThisMember = this.CheckViability(m, arity, options, null, diagnose: true, useSiteInfo: ref useSiteInfo);
                 result.MergeEqual(resultOfThisMember);
-            }
-
-            methods.Free();
+            }, name, arity, options, this);
         }
 
         #region "AttributeTypeLookup"
@@ -752,6 +750,15 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         internal virtual void GetCandidateExtensionMethods(
             ArrayBuilder<MethodSymbol> methods,
+            string name,
+            int arity,
+            LookupOptions options,
+            Binder originalBinder)
+        {
+        }
+
+        internal virtual void PerformActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> action,
             string name,
             int arity,
             LookupOptions options,

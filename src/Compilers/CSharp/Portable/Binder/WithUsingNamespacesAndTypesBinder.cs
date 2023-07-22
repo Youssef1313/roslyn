@@ -127,6 +127,58 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        internal override void PerformActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> action,
+            string name,
+            int arity,
+            LookupOptions options,
+            Binder originalBinder)
+        {
+            bool callerIsSemanticModel = originalBinder.IsSemanticModelBinder;
+
+            foreach (var nsOrType in this.GetUsings(basesBeingResolved: null))
+            {
+                switch (nsOrType.NamespaceOrType.Kind)
+                {
+                    case SymbolKind.Namespace:
+                        {
+                            var hasExtensionMethods = false;
+                            ((NamespaceSymbol)nsOrType.NamespaceOrType).PerformActionOnExtensionMethods(m =>
+                            {
+                                hasExtensionMethods = true;
+                                action(m);
+                            }, name, arity, options);
+
+                            // If we found any extension methods, then consider this using as used.
+                            if (hasExtensionMethods)
+                            {
+                                MarkImportDirective(nsOrType.UsingDirectiveReference, callerIsSemanticModel);
+                            }
+
+                            break;
+                        }
+
+                    case SymbolKind.NamedType:
+                        {
+                            var hasExtensionMethods = false;
+                            ((NamedTypeSymbol)nsOrType.NamespaceOrType).PerformActionOnExtensionMethods(m =>
+                            {
+                                hasExtensionMethods = true;
+                                action(m);
+                            }, name, arity, options);
+
+                            // If we found any extension methods, then consider this using as used.
+                            if (hasExtensionMethods)
+                            {
+                                MarkImportDirective(nsOrType.UsingDirectiveReference, callerIsSemanticModel);
+                            }
+
+                            break;
+                        }
+                }
+            }
+        }
+
         internal override void LookupSymbolsInSingleBinder(
             LookupResult result, string name, int arity, ConsList<TypeSymbol>? basesBeingResolved, LookupOptions options, Binder originalBinder, bool diagnose, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
         {

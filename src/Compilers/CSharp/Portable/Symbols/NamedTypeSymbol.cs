@@ -349,13 +349,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal void DoGetExtensionMethods(ArrayBuilder<MethodSymbol> methods, string nameOpt, int arity, LookupOptions options)
         {
-            var members = nameOpt == null
-                ? this.GetMembersUnordered()
-                : this.GetSimpleNonTypeMembers(nameOpt);
+            var members = this.GetMembersUnordered();
 
             foreach (var member in members)
             {
-                if (member.Kind == SymbolKind.Method)
+                if (member.Kind == SymbolKind.Method && (nameOpt is null || member.Name == nameOpt))
                 {
                     var method = (MethodSymbol)member;
                     if (method.IsExtensionMethod &&
@@ -372,6 +370,34 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                         Debug.Assert(method.MethodKind != MethodKind.ReducedExtension);
                         methods.Add(method);
+                    }
+                }
+            }
+        }
+
+        internal void PerformActionOnExtensionMethods(Action<MethodSymbol> action, string nameOpt, int arity, LookupOptions options)
+        {
+            var members = this.GetMembersUnordered();
+
+            foreach (var member in members)
+            {
+                if (member.Kind == SymbolKind.Method && (nameOpt is null || member.Name == nameOpt))
+                {
+                    var method = (MethodSymbol)member;
+                    if (method.IsExtensionMethod &&
+                        ((options & LookupOptions.AllMethodsOnArityZero) != 0 || arity == method.Arity))
+                    {
+                        var thisParam = method.Parameters.First();
+
+                        if ((thisParam.RefKind == RefKind.Ref && !thisParam.Type.IsValueType) ||
+                            (thisParam.RefKind == RefKind.In && thisParam.Type.TypeKind != TypeKind.Struct))
+                        {
+                            // For ref and ref-readonly extension methods, receivers need to be of the correct types to be considered in lookup
+                            continue;
+                        }
+
+                        Debug.Assert(method.MethodKind != MethodKind.ReducedExtension);
+                        action(method);
                     }
                 }
             }

@@ -85,6 +85,19 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        internal override void PerformActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> action,
+            string name,
+            int arity,
+            LookupOptions options,
+            Binder originalBinder)
+        {
+            if (_container.Kind == SymbolKind.Namespace)
+            {
+                ((NamespaceSymbol)_container).PerformActionOnExtensionMethods(action, name, arity, options);
+            }
+        }
+
         internal override TypeWithAnnotations GetIteratorElementType()
         {
             if (IsScriptClass)

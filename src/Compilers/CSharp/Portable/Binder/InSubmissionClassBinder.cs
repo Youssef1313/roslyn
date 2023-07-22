@@ -44,6 +44,19 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        internal override void PerformActionOnCandidateExtensionMethods(
+            Action<MethodSymbol> action,
+            string name,
+            int arity,
+            LookupOptions options,
+            Binder originalBinder)
+        {
+            for (var submission = this.Compilation; submission != null; submission = submission.PreviousSubmission)
+            {
+                submission.ScriptClass?.PerformActionOnExtensionMethods(action, name, arity, options);
+            }
+        }
+
         internal override void LookupSymbolsInSingleBinder(
             LookupResult result, string name, int arity, ConsList<TypeSymbol> basesBeingResolved, LookupOptions options, Binder originalBinder, bool diagnose, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
         {

@@ -242,6 +242,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             underlyingMethods.Free();
         }
 
+        internal override void PerformActionOnExtensionMethods(Action<MethodSymbol> action, string nameOpt, int arity, LookupOptions options)
+        {
+            _underlyingNamespace.PerformActionOnExtensionMethods(m => action(this.RetargetingTranslator.Retarget(m)), nameOpt, arity, options);
+        }
+
         internal sealed override CSharpCompilation DeclaringCompilation // perf, not correctness
         {
             get { return null; }
